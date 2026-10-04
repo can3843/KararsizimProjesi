@@ -30,9 +30,13 @@
 .site-header__nav form { margin: 0; }
 
 .site-header__user {
-  font-weight: 600;
   margin-right: var(--sp-2);
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
 }
+
+.site-header__user:hover { text-decoration: underline; }
 
 /* Butonlar */
 .button {
@@ -142,6 +146,262 @@
 .auth-card__switch {
   margin: var(--sp-5) 0 0;
   text-align: center;
+}
+
+/* Sekmeler */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin: var(--sp-5) 0;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--sp-4);
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius-pill);
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.tab[aria-current="page"] {
+  background: var(--ink);
+  color: var(--surface);
+}
+
+/* Anket kartları */
+.poll-grid {
+  display: grid;
+  gap: var(--sp-4);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 900px) {
+  .poll-grid { grid-template-columns: 1fr 1fr; }
+}
+
+.poll-card {
+  padding: var(--sp-5);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 150ms, transform 150ms;
+}
+
+.poll-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.poll-card__question {
+  margin: var(--sp-3) 0 var(--sp-2);
+  font-size: 20px;
+}
+
+.poll-card__question a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.poll-card__question a:hover { text-decoration: underline; }
+
+.poll-card__meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.load-more,
+.empty-state {
+  margin: var(--sp-6) 0;
+  text-align: center;
+}
+
+.empty-state {
+  padding: var(--sp-6) var(--sp-4);
+  background: var(--surface);
+  border: 1px dashed var(--muted);
+  border-radius: var(--radius-card);
+}
+
+/* Karar çubuğu ve kararsızlık rozeti */
+.decision-bar {
+  display: flex;
+  height: 14px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--line);
+}
+
+.decision-bar__segment {
+  display: block;
+  height: 100%;
+  background: var(--opt);
+  transition: width 450ms cubic-bezier(.2, .8, .2, 1);
+}
+
+.badge {
+  display: inline-block;
+  margin: var(--sp-2) 0 0;
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--violet) 10%, var(--surface));
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.badge--empty {
+  background: transparent;
+  border: 1.5px dashed var(--muted);
+}
+
+/* Seçenek renkleri */
+.opt-0 { --opt: var(--opt-0); }
+.opt-1 { --opt: var(--opt-1); }
+.opt-2 { --opt: var(--opt-2); }
+.opt-3 { --opt: var(--opt-3); }
+.opt-4 { --opt: var(--opt-4); }
+
+/* Anket detayı */
+.poll-detail {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.poll-detail__question {
+  margin-top: var(--sp-2);
+  font-size: 26px;
+}
+
+@media (min-width: 600px) {
+  .poll-detail__question { font-size: 34px; }
+}
+
+.poll-detail__total {
+  margin: var(--sp-3) 0 var(--sp-5);
+  font-family: ui-monospace, monospace;
+  font-weight: 500;
+}
+
+.option-list {
+  display: grid;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.option-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  min-height: 56px;
+  padding: var(--sp-3) var(--sp-4) var(--sp-3) var(--sp-5);
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-input);
+}
+
+.option-row::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 6px;
+  background: var(--opt);
+}
+
+.option-row__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: color-mix(in srgb, var(--opt) 25%, var(--surface));
+  transition: width 450ms cubic-bezier(.2, .8, .2, 1);
+}
+
+.option-row__text,
+.option-row__percent {
+  position: relative;
+}
+
+.option-row__text { font-weight: 600; overflow-wrap: anywhere; }
+
+.option-row__percent {
+  font-family: ui-monospace, monospace;
+  font-weight: 500;
+}
+
+/* Anket oluşturma formu */
+.form-card {
+  max-width: 640px;
+  margin: var(--sp-5) auto;
+  padding: var(--sp-5);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.field textarea {
+  width: 100%;
+  padding: var(--sp-3) var(--sp-4);
+  border: 1.5px solid var(--muted);
+  border-radius: var(--radius-input);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  resize: vertical;
+}
+
+.field--error textarea { border-color: var(--danger); }
+
+.options {
+  margin: 0 0 var(--sp-4);
+  padding: 0;
+  border: 0;
+}
+
+.options legend {
+  padding: 0;
+  font-weight: 600;
+}
+
+.option-field { margin-bottom: var(--sp-3); }
+
+.option-field label {
+  display: block;
+  margin-bottom: var(--sp-1);
+}
+
+.option-field__control {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.option-field__control input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 var(--sp-4);
+  border: 1.5px solid var(--muted);
+  border-radius: var(--radius-input);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+
+.options.field--error .option-field__control input { border-color: var(--danger); }
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Toast */

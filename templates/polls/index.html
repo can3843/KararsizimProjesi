@@ -2,4 +2,13 @@
 
 {% block content %}
   <h1>Kararsızım</h1>
+  <p class="muted">Sen sor, kalabalık karar versin.</p>
+
+  <nav class="tabs" aria-label="Anket akışı">
+    {% for key, label in tabs %}
+      <a class="tab" href="?tab={{ key }}"{% if key == tab %} aria-current="page"{% endif %}>{{ label }}</a>
+    {% endfor %}
+  </nav>
+
+  {% include "partials/poll_list.html" %}
 {% endblock %}

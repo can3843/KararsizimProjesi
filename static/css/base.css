@@ -28,6 +28,8 @@ a { color: var(--violet); }
 
 .muted { color: var(--muted); }
 
+[hidden] { display: none !important; }
+
 .container {
   width: 100%;
   max-width: 960px;

@@ -1,0 +1,15 @@
+{% if polls %}
+  <div class="poll-grid">
+    {% for poll in polls %}{% include "partials/poll_card.html" %}{% endfor %}
+  </div>
+  {% if next_page %}
+    <p class="load-more">
+      <a class="button button--secondary" href="{{ load_more_url }}">Daha fazla göster</a>
+    </p>
+  {% endif %}
+{% else %}
+  <div class="empty-state">
+    <p>Henüz anket yok. İlk kararsızlığını sen paylaş.</p>
+    <a class="button button--primary" href="{% url 'polls:create' %}">Anket oluştur</a>
+  </div>
+{% endif %}

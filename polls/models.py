@@ -2,6 +2,7 @@ from django.conf import settings
 from django.core.validators import MaxValueValidator, MinLengthValidator
 from django.db import models
 from django.db.models import Q
+from django.urls import reverse
 from django.utils import timezone
 
 from .utils import generate_public_id
@@ -38,7 +39,7 @@ class Poll(models.Model):
         return self.closes_at is None or self.closes_at > timezone.now()
 
     def get_absolute_url(self):
-        return f"/anket/{self.public_id}/"
+        return reverse("polls:detail", args=[self.public_id])
 
 
 class Option(models.Model):

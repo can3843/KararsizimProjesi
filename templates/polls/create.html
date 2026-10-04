@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Anket oluştur · Kararsızım{% endblock %}
+
+{% block content %}
+  <section class="form-card">
+    <h1>Anket oluştur</h1>
+    <p class="muted">Kararsız kaldığın şeyi sor, 2–5 seçenek ekle.</p>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="alert alert--danger" role="alert">
+          {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+        </div>
+      {% endif %}
+
+      {% include "partials/form_field.html" with field=form.question %}
+      {% include "partials/form_field.html" with field=form.description %}
+
+      <fieldset class="options{% if form.options.errors %} field--error{% endif %}">
+        <legend>Seçenekler</legend>
+        <p class="field__hint">En az 2, en fazla 5 seçenek.</p>
+        <div id="option-list">
+          {% for row in form.option_rows %}
+            <div class="option-field">
+              <label for="id_option_{{ row.number }}">Seçenek {{ row.number }}{% if row.number > 2 %} (isteğe bağlı){% endif %}</label>
+              <div class="option-field__control">
+                <input type="text" name="option" id="id_option_{{ row.number }}" value="{{ row.value }}" maxlength="80" autocomplete="off">
+                {% if row.number > 2 %}
+                  <button type="button" class="button button--secondary option-field__remove" aria-label="Seçenek {{ row.number }} satırını kaldır" hidden>Kaldır</button>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+        {% for error in form.options.errors %}<p class="field__error">{{ error }}</p>{% endfor %}
+        <button type="button" id="add-option" class="button button--secondary" hidden>Seçenek ekle</button>
+      </fieldset>
+
+      <button class="button button--primary button--block" type="submit">Anket oluştur</button>
+    </form>
+  </section>
+  <script src="{% static 'js/poll-form.js' %}" defer></script>
+{% endblock %}

@@ -1,0 +1,4 @@
+<div class="decision-bar" role="img" aria-label="{{ poll.bar_label }}">
+  {% for row in poll.rows %}{% if row.percent %}<span class="decision-bar__segment opt-{{ row.index }}" style="width: {{ row.percent }}%"></span>{% endif %}{% endfor %}
+</div>
+<p class="badge badge--{{ poll.badge_level }}">{{ poll.badge_text }}</p>

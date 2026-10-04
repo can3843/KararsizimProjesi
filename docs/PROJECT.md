@@ -227,15 +227,18 @@ UniqueConstraint(fields=["poll", "voter_key"], condition=Q(user__isnull=True), n
 6. Oy verilen anket id'si `request.session["voted_polls"]` listesine eklenir (hızlı UI kontrolü için).
 
 ### Sonuç görünürlüğü
-- Oy vermeden önce yüzdeler **gizlidir** (sürü psikolojisini kırmak için). Sadece toplam oy sayısı görünür: "142 kişi oy verdi".
-- Oy verildikten sonra veya anket kapandıktan sonra tüm yüzdeler açılır.
+- Oy vermeden önce yüzde **rakamları** gizlidir (sürü psikolojisini kırmak için). Toplam oy sayısı görünür: "142 kişi oy verdi".
+- Oy verildikten sonra veya anket kapandıktan sonra tüm yüzde rakamları açılır.
 - Kendi anketinin sahibi oy vermeden de sonuçları görebilir.
+- **Karar çubuğu ve kararsızlık rozeti herkese açıktır** (Bölüm 7). Karar (Faz 3): çubuk ve rozet oy vermemiş ziyaretçiye de gösterilir; gizlenen yalnızca yüzde rakamlarıdır (seçenek satırlarındaki `%42` ve ekran okuyucu etiketindeki yüzdeler). Rozet farkı, **en çok oy alan iki seçenek** arasında hesaplanır.
 
 ### Anket oluşturma
 - Form: soru + açıklama (ops.) + 2 seçenek (varsayılan görünür) + "Seçenek ekle" ile 5'e kadar.
 - Sunucu tarafında da 2–5 kontrolü yapılır (JS'e güvenme).
 - Boş bırakılan seçenek satırları yok sayılır; geriye 2'den az kalırsa hata.
-- Aynı kullanıcı günde en fazla **10** anket açabilir (spam koruması).
+- Aynı kullanıcı günde en fazla **10** anket açabilir (spam koruması). "Gün", `Europe/Istanbul` saatine göre gece yarısından başlar (kayan 24 saat değil).
+- Seçenek girdileri `option` adıyla tekrarlanır (`getlist`); JS kapalıyken 5 satırın hepsi görünür, boş satırlar yok sayılır. Gönderimde 5'ten fazla dolu seçenek form hatasıdır.
+- Akış sayfalaması "daha fazla göster" biçimindedir: `?page=N` ilk `N × 20` kaydı gösterir (en çok 25 sayfa), JS gerekmez.
 
 ---
 

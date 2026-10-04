@@ -3,8 +3,8 @@
     <a class="site-header__logo" href="{% url 'polls:index' %}">Kararsızım</a>
     <nav class="site-header__nav" aria-label="Ana menü">
       {% if user.is_authenticated %}
-        <span class="site-header__user">@{{ user.username }}</span>
-        <a class="button button--primary" href="/anket/olustur/">Anket oluştur</a>
+        <a class="site-header__user" href="{% url 'polls:profile' user.username %}">@{{ user.username }}</a>
+        <a class="button button--primary" href="{% url 'polls:create' %}">Anket oluştur</a>
         <form method="post" action="{% url 'accounts:logout' %}">
           {% csrf_token %}
           <button class="button button--secondary" type="submit">Çıkış yap</button>
