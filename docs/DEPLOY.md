@@ -7,7 +7,8 @@ Bu dosyada parola, anahtar veya bağlantı adresi **yoktur**; gizli değerler ya
 - Vercel repoda `manage.py` dosyasını bulur ve `config/settings.py` içindeki `WSGI_APPLICATION` ayarından giriş noktasını çıkarır. Sarmalayıcı dosya veya `builds`/`routes` yazılmaz.
 - `STATIC_ROOT` tanımlı olduğu için `collectstatic` build sırasında otomatik çalışır; statik dosyalar Vercel CDN'den gelir.
 - `vercel.json` yalnızca `regions: ["fra1"]` (Supabase Frankfurt'ta) ve `config/wsgi.py` için `maxDuration` içerir.
-- Deploy GitHub'a bağlıdır: `main`'e push → production, diğer dallar → preview.
+- Vercel projesi `kararsizim-app` (ekip `Ayhancan`), canlı adres `https://kararsizim-app.vercel.app`. Proje, Vercel dashboard'unda **Add New → Project → Import** ile GitHub deposundan kuruldu (Framework Preset: Django).
+- Deploy GitHub'a bağlıdır: `main`'e push → production, diğer dallar → preview. **Her push canlıyı değiştirir**; push etmeden önce testlerin geçtiğinden emin ol.
 - `VERCEL=1` ortam değişkeni Vercel'de otomatik vardır; `settings.py` bunu görünce HTTPS yönlendirmesini, güvenli çerezleri ve `SECURE_PROXY_SSL_HEADER`'ı açar. Yerelde kapatmak/açmak için `DJANGO_SECURE=False/True`. `DJANGO_SECURE` açıkken `DJANGO_DEBUG` kapalı olmak zorundadır.
 
 ## 2. Ortam değişkenleri (Vercel → Settings → Environment Variables)
@@ -19,7 +20,7 @@ Bu dosyada parola, anahtar veya bağlantı adresi **yoktur**; gizli değerler ya
 | `DATABASE_URL` | Supabase **Transaction pooler** (`:6543`) adresi | **evet** |
 | `DJANGO_DEBUG` | `False` | hayır |
 | `DJANGO_ALLOWED_HOSTS` | `.vercel.app` (özel alan adı eklenirse onu da) | hayır |
-| `DJANGO_CSRF_TRUSTED_ORIGINS` | `https://<proje>.vercel.app` (virgülle birden fazla) | hayır |
+| `DJANGO_CSRF_TRUSTED_ORIGINS` | `https://kararsizim-app.vercel.app` (virgülle birden fazla; yalnızca Production için tanımlı) | hayır |
 
 Rastgele değer üretmek:
 

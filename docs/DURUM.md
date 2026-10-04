@@ -1,8 +1,8 @@
 # Kararsızım — Güncel Durum ve Devir Notu
 
 > Yeni bir oturum açan herkes (insan ya da Claude) önce `docs/PROJECT.md` (şartname), sonra bu dosyayı okur.
-> Bu dosyada **parola, anahtar veya bağlantı adresi yoktur**; gizli değerler yalnızca yerel `.env` ve (Faz 6'da) Vercel ortam değişkenlerindedir.
-> Son güncelleme: 2026-10-04, Faz 5 sonrası. Sıradaki iş: **Faz 6 — Vercel'e deployment**.
+> Bu dosyada **parola, anahtar veya bağlantı adresi yoktur**; gizli değerler yalnızca yerel `.env` ve Vercel ortam değişkenlerindedir.
+> Son güncelleme: 2026-10-04, Faz 6 sonrası. Uygulama **canlıda**: https://kararsizim-app.vercel.app. Sıradaki iş: Faz 7 (opsiyonel) ve Faz 6'nın açık kalan tek maddesi (soğuk başlangıç kontrolü, aşağıda).
 
 ## 1. Nerede kaldık
 
@@ -14,11 +14,12 @@
 | 3 Anket oluşturma ve akış | bitti | `339871c` |
 | 4 Oylama ve sonuçlar | bitti | `e8abcf4` |
 | 5 Arayüz cilası | bitti | `7fec02c` |
-| **6 Vercel deployment** | **sürüyor** — yerel hazırlık bitti (güvenlik ayarları, `config/test_settings.py`, `docs/DEPLOY.md`); Vercel proje/env/deploy adımları onay bekliyor | — |
+| 6 Vercel deployment | bitti (soğuk başlangıç kontrolü hariç, bkz. Bölüm 4) | `555ab9b` |
 | 7 Sertleştirme (opsiyonel) | başlanmadı | — |
 
 - Depo: https://github.com/can3843/KararsizimProjesi.git, dal `main`, tümü pushlanmış, çalışma ağacı temiz.
-- Testler: `python manage.py test` → **163 test, hepsi geçiyor**. Zorunlu testlerin (Bölüm 9) hepsi var.
+- Canlı: Vercel projesi `kararsizim-app` (ekip `Ayhancan`, Hobby), GitHub'a bağlı; `main`'e her push production'a otomatik deploy olur. Adres https://kararsizim-app.vercel.app, bölge `fra1`.
+- Testler: `python manage.py test` → **168 test, hepsi geçiyor**. Zorunlu testlerin (Bölüm 9) hepsi var.
 - Lighthouse Accessibility: 9 sayfa türünün hepsi **100** (Faz 5'te `npx lighthouse` ile ölçüldü; projeye eklenmedi).
 - Faz 0–5'in tüm kabul kriterleri kapandı.
 
@@ -42,26 +43,24 @@
 - Yerel `.env`'de `DATABASE_URL_DIRECT` (5432, migration için) dolu; `DATABASE_URL` (6543) yorum satırı. Parola kullanıcıda; sohbete yazılmadı.
 - Şema uygulandı (Faz 1 migration'ları), tablolar: `accounts_user`, `polls_poll`, `polls_option`, `polls_vote` + Django tabloları.
 - **RLS tüm tablolarda politikasız (deny-all) açık** (Supabase REST API `public` şemasını herkese açtığı için). Django `postgres` rolüyle bağlanır, etkilenmez. **Her yeni tablodan sonra** aynısı uygulanıp `get_advisors` ile kontrol edilmeli. "RLS Enabled No Policy" INFO uyarısı beklenendir.
-- Supabase'de **demo veri var** (3 `demo_*` kullanıcı, 12 anket, ~445 oy). Canlıya çıkmadan önce temizlenmeli.
+- Supabase'de **demo veri var** (3 `demo_*` kullanıcı, 12 anket, ~445 oy). Kullanıcı kararıyla canlıda **bırakıldı**; canlı doğrulamada bir ankete bir oy eklendi.
 - Migration'ı Windows'ta çalıştırma (`DATABASE_URL=$X python ...` PowerShell'de çalışmaz):
   ```powershell
   $env:DATABASE_URL = "<Session pooler adresi>"; .\.venv\Scripts\python.exe manage.py migrate; Remove-Item Env:DATABASE_URL
   ```
 - Eşzamanlı çift oy Postgres üzerinde doğrulandı: 8 eşzamanlı istekten 1'i başarılı, 7'si 409, sayaç tam 1 artıyor.
 
-## 4. Faz 6 için yapılacaklar (şartname Bölüm 8 + 11)
+## 4. Faz 6 — Vercel deployment (yapıldı)
 
-Henüz **hiçbiri yapılmadı**. Vercel CLI kurulu değil (Node 24 var). Claude oturumlarında Vercel bağlayıcısı (MCP) kullanılabilir; ekip ve proje kimlikleri keşfedilmeli.
+Ayrıntılı rehber: `docs/DEPLOY.md`.
 
-1. `settings.py`: `WSGI_APPLICATION` ve `STATIC_ROOT` zaten tanımlı. Eksikler: `SECURE_PROXY_SSL_HEADER`, `SESSION_COOKIE_SECURE`, `CSRF_COOKIE_SECURE`, `SECURE_SSL_REDIRECT` (yalnızca production'da, `DEBUG=False` iken). `CSRF_TRUSTED_ORIGINS` env'den okunuyor.
-2. Veritabanı ayarları (`conn_max_age=0`, `DISABLE_SERVER_SIDE_CURSORS`, `prepare_threshold=None`) **zaten** PostgreSQL için `settings.py`'de.
-3. Vercel proje env değişkenleri (Bölüm 10): `DJANGO_SECRET_KEY` (yeni, güçlü), `DJANGO_DEBUG=False`, `DJANGO_ALLOWED_HOSTS=.vercel.app`, `DJANGO_CSRF_TRUSTED_ORIGINS=https://<proje>.vercel.app`, `VOTER_KEY_SALT` (yerelden farklı), `DATABASE_URL` (Transaction pooler 6543). Gizli değerleri sohbete yazmadan ayarla.
-4. `vercel.json` hazır: `regions: ["fra1"]` (veritabanı Frankfurt'ta) + `functions` altında `config/wsgi.py` için `maxDuration`. **`functions` anahtarı Vercel'in güncel Django dokümanıyla doğrulanmadı** (`vercel.com/docs/frameworks/full-stack/django`); şartname tahmin ederek doldurmayı yasaklıyor, önce dokümana bak.
-5. Statik dosya depolaması: şu an varsayılan; şartname `CompressedManifestStaticFilesStorage`'ı da destekli sayıyor. `500.html` `{% static %}` kullanıyor; manifest depolamaya geçilirse bu sayfanın hata anında çalışması ayrıca düşünülmeli.
-6. `docs/DEPLOY.md` yazılacak: migration'ın yerelden nasıl çalıştırılacağı (yukarıdaki PowerShell komutu), env değişkenlerinin nasıl ayarlanacağı.
-7. `vercel dev` ile dene, sonra deploy. **Canlıya çıkmak dışarıya açık bir işlem**: kullanıcıdan açık onay al, her kritik adımda sor.
-
-Faz 6 kabul kriterleri: canlı URL açılıyor ve CSS/JS Vercel CDN'den geliyor; canlıda kayıt, anket açma ve oy verme çalışıyor; `DEBUG=False` ve özel hata sayfaları görünüyor; soğuk başlangıçtan sonra ilk istek 500 vermiyor.
+- **Ayarlar:** `settings.py` içinde `VERCEL=1` (Vercel tanımlar) iken HTTPS yönlendirmesi, güvenli çerezler ve `SECURE_PROXY_SSL_HEADER` açılır; `DJANGO_SECURE` ile ezilebilir. `config/test_settings.py` bunu test eder. `vercel.json` (`fra1`, `config/wsgi.py` için `maxDuration`) Vercel'in Django dokümanıyla doğrulandı. Statik depolama varsayılan bırakıldı (manifest depolama `500.html`'i riske atar).
+- **Vercel projesi** dashboard'dan GitHub deposunun import edilmesiyle kuruldu. Vercel MCP bağlayıcısı proje oluşturamadı (403) ve projeyi göremiyor; deploy/env işlemleri kullanıcı tarafından panelden yapılır, gizli değerler sohbete girmedi.
+- **Ortam değişkenleri** (değerler yalnızca Vercel panelinde): `DJANGO_DEBUG=False`, `DJANGO_ALLOWED_HOSTS=.vercel.app`, `DJANGO_SECRET_KEY`, `VOTER_KEY_SALT`, `DATABASE_URL` (Transaction pooler 6543), `DJANGO_CSRF_TRUSTED_ORIGINS=https://kararsizim-app.vercel.app`. Değişken eklenince yeniden deploy gerekir.
+- **Canlı doğrulama (2026-10-04):** ana sayfa 200; `/static/...` Vercel CDN'den (`x-vercel-cache: HIT`); özel 404; `http`→`https` 308; CSRF çerezi `Secure`; anonim oy veritabanına yazıldı, sayfa yenilenince sonuç görünüyor, yüzdeler toplamı 100; girişsiz `/anket/olustur/` → `/giris/?next=`; `/sonuc/` JSON'unda e-posta yok. Kayıt, giriş ve anket oluşturma kullanıcı tarafından canlıda denendi, çalışıyor.
+- **Açık kalan tek madde:** soğuk başlangıçtan sonraki ilk isteğin 500 vermediği henüz ölçülmedi (birkaç saat bekleyip siteyi açmak yeterli). Faz 6'nın diğer kabul kriterleri kapandı.
+- `vercel dev` ve Vercel CLI kullanılmadı (projeye eklenmedi); canlıya benzer doğrulama deploy ile yapıldı.
+- HSTS (`SECURE_HSTS_SECONDS`) Django'da ayarlanmadı; Vercel kendi `Strict-Transport-Security` başlığını gönderiyor.
 
 ## 5. Önemli kararlar ve şartnameden sapmalar (ayrıntı `PROJECT.md` içinde işlendi)
 
@@ -98,4 +97,4 @@ Teknik tuzaklar (Windows + PowerShell 5.1):
 
 ## 8. Yeni oturum için başlangıç komutu
 
-> `docs/PROJECT.md` ve `docs/DURUM.md` dosyalarını oku, Faz 6'yı (Vercel deployment) planla. Başlamadan önce ne yapacağını özetle; canlıya çıkma, ortam değişkeni ve alan adı gibi dışarıya açık adımlarda onayımı iste.
+> `docs/PROJECT.md` ve `docs/DURUM.md` dosyalarını oku. Faz 7'den (sertleştirme, opsiyonel) hangi maddelerle devam edeceğimizi öner; başlamadan önce ne yapacağını özetle. `main`'e her push canlıya otomatik deploy olur: push, ortam değişkeni ve alan adı gibi dışarıya açık adımlarda onayımı iste.
