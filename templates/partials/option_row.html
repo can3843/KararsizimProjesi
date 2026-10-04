@@ -1,5 +1,19 @@
-<li class="option-row opt-{{ row.index }}{% if poll.results_visible %} option-row--result{% endif %}">
-  {% if poll.results_visible %}<span class="option-row__fill" style="width: {{ row.percent }}%"></span>{% endif %}
-  <span class="option-row__text">{{ row.option.text }}</span>
-  {% if poll.results_visible %}<span class="option-row__percent">%{{ row.percent }}</span>{% endif %}
+<li class="option-row opt-{{ row.index }}{% if poll.can_vote %} option-row--votable{% endif %}{% if row.voted %} option-row--voted{% endif %}" data-option-id="{{ row.option.pk }}">
+  <span class="option-row__fill"{% if poll.results_visible %} style="width: {{ row.percent }}%"{% else %} hidden{% endif %}></span>
+  {% if poll.can_vote %}
+    <input class="option-row__input visually-hidden" type="radio" name="option_id" id="option-{{ row.option.pk }}" value="{{ row.option.pk }}">
+    <label class="option-row__body" for="option-{{ row.option.pk }}">
+  {% else %}
+    <div class="option-row__body">
+  {% endif %}
+      <span class="option-row__text">{{ row.option.text }}</span>
+      <span class="option-row__result">
+        <span class="option-row__percent"{% if not poll.results_visible %} hidden{% endif %}>{% if poll.results_visible %}%{{ row.percent }}{% endif %}</span>
+        <span class="option-row__check" role="img" aria-label="Senin oyun"{% if not row.voted %} hidden{% endif %}>✓</span>
+      </span>
+  {% if poll.can_vote %}
+    </label>
+  {% else %}
+    </div>
+  {% endif %}
 </li>

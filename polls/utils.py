@@ -1,11 +1,27 @@
+import hashlib
 import secrets
 import string
+
+from django.conf import settings
 
 _PUBLIC_ID_ALPHABET = string.ascii_letters + string.digits
 
 
 def generate_public_id(length=11):
     return "".join(secrets.choice(_PUBLIC_ID_ALPHABET) for _ in range(length))
+
+
+def make_voter_key(session_key):
+    return hashlib.sha256(f"{session_key}{settings.VOTER_KEY_SALT}".encode()).hexdigest()
+
+
+def get_voter_key(request, create=False):
+    """Oturumdan türetilen anonim oy anahtarı. `create` yoksa oturum açmadan None döner."""
+    if not request.session.session_key:
+        if not create:
+            return None
+        request.session.save()
+    return make_voter_key(request.session.session_key)
 
 
 def compute_percentages(counts):

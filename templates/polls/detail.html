@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load polls_extras %}
+{% load static polls_extras %}
 
 {% block title %}{{ poll.question }} · Kararsızım{% endblock %}
 
@@ -13,11 +13,42 @@
     <h1 class="poll-detail__question">{{ poll.question }}</h1>
     {% if poll.description %}<p class="muted">{{ poll.description }}</p>{% endif %}
 
-    {% include "partials/decision_bar.html" %}
-    <p class="poll-detail__total">{{ poll.total_votes }} kişi oy verdi</p>
+    <div class="results-region" aria-live="polite">
+      {% include "partials/decision_bar.html" %}
+      <p class="poll-detail__total"><span data-total>{{ poll.total_votes }}</span> kişi oy verdi</p>
+      <p class="vote-status" data-vote-status>{% if poll.has_voted %}Oyunu verdin.{% elif not poll.open %}Bu anket kapandı.{% endif %}</p>
+    </div>
 
-    <ul class="option-list">
-      {% for row in poll.rows %}{% include "partials/option_row.html" %}{% endfor %}
-    </ul>
+    {% if poll.can_vote %}
+      <form method="post" action="{% url 'polls:vote' poll.public_id %}" class="vote-form" data-vote-form>
+        {% csrf_token %}
+        <fieldset class="vote-fieldset">
+          <legend class="visually-hidden">Seçeneklerden birini seç</legend>
+          <ul class="option-list">
+            {% for row in poll.rows %}{% include "partials/option_row.html" %}{% endfor %}
+          </ul>
+        </fieldset>
+        <div class="vote-actions">
+          <button class="button button--primary button--block" type="submit">Oy ver</button>
+        </div>
+      </form>
+    {% else %}
+      <ul class="option-list">
+        {% for row in poll.rows %}{% include "partials/option_row.html" %}{% endfor %}
+      </ul>
+    {% endif %}
+
+    {% if poll.is_owner %}
+      <div class="owner-actions">
+        {% if poll.open %}
+          <form method="post" action="{% url 'polls:close' poll.public_id %}">
+            {% csrf_token %}
+            <button class="button button--secondary" type="submit">Anketi kapat</button>
+          </form>
+        {% endif %}
+        <a class="button button--secondary" href="{% url 'polls:delete' poll.public_id %}">Anketi sil</a>
+      </div>
+    {% endif %}
   </article>
+  {% if poll.can_vote %}<script src="{% static 'js/vote.js' %}" defer></script>{% endif %}
 {% endblock %}

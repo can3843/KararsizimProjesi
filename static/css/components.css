@@ -74,6 +74,18 @@
   background: color-mix(in srgb, var(--ink) 6%, transparent);
 }
 
+/* --danger üzerinde beyaz metin 4.5:1 vermez; tehlike çerçeveyle, metin --ink ile belirtilir. */
+.button--danger {
+  background: var(--surface);
+  border-color: var(--danger);
+  border-width: 2px;
+  color: var(--ink);
+}
+
+.button--danger:hover {
+  background: color-mix(in srgb, var(--danger) 10%, var(--surface));
+}
+
 .button--block {
   width: 100%;
   margin-top: var(--sp-3);
@@ -297,14 +309,17 @@
   list-style: none;
 }
 
+.poll-detail__total span { font-variant-numeric: tabular-nums; }
+
+.vote-status {
+  min-height: 1.5em;
+  margin: calc(-1 * var(--sp-4)) 0 var(--sp-3);
+  color: var(--muted);
+  font-size: 14px;
+}
+
 .option-row {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-3);
-  min-height: 56px;
-  padding: var(--sp-3) var(--sp-4) var(--sp-3) var(--sp-5);
   overflow: hidden;
   background: var(--surface);
   border: 1px solid var(--line);
@@ -315,6 +330,7 @@
   content: "";
   position: absolute;
   inset: 0 auto 0 0;
+  z-index: 1;
   width: 6px;
   background: var(--opt);
 }
@@ -326,16 +342,83 @@
   transition: width 450ms cubic-bezier(.2, .8, .2, 1);
 }
 
-.option-row__text,
-.option-row__percent {
+.option-row__body {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  min-height: 56px;
+  padding: var(--sp-3) var(--sp-4) var(--sp-3) var(--sp-5);
 }
 
 .option-row__text { font-weight: 600; overflow-wrap: anywhere; }
 
+.option-row__result {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+}
+
 .option-row__percent {
   font-family: ui-monospace, monospace;
   font-weight: 500;
+}
+
+.option-row__check { font-weight: 800; }
+
+/* Oy öncesi: tıklanabilir satır, üzerine gelince seçenek renginin %8'i */
+.option-row--votable .option-row__body { cursor: pointer; }
+
+.option-row--votable:hover {
+  background: color-mix(in srgb, var(--opt) 8%, var(--surface));
+}
+
+.option-row:has(.option-row__input:checked) {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 1px var(--ink);
+}
+
+.option-row:has(.option-row__input:focus-visible) {
+  outline: 3px solid var(--sun);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
+/* Oy sonrası: kullanıcının kendi oyu kalın çerçeve ve ✓ ile işaretlenir */
+.option-row--voted {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 1px var(--ink);
+}
+
+.vote-fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.vote-actions { margin-top: var(--sp-4); }
+
+.owner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-6);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--line);
+}
+
+.owner-actions form { margin: 0; }
+
+.confirm-question {
+  margin: 0 0 var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  border-left: 4px solid var(--danger);
+  background: color-mix(in srgb, var(--danger) 8%, var(--surface));
+  border-radius: var(--radius-input);
+  font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 /* Anket oluşturma formu */

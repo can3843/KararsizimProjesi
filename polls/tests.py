@@ -356,6 +356,11 @@ class ResultVisibilityTests(TestCase):
         cls.author = User.objects.create_user("ayse", "ayse@example.com", PASSWORD)
         cls.visitor = User.objects.create_user("mehmet", "mehmet@example.com", PASSWORD)
 
+    def assertPercentagesHidden(self, response):
+        self.assertNotContains(response, "%60")
+        self.assertNotContains(response, "%40")
+        self.assertNotRegex(response.content.decode(), r'option-row__percent"[^>]*>\s*%\d')
+
     def test_bar_and_badge_are_public_but_percentages_are_hidden_before_voting(self):
         poll = make_poll(self.author, counts=(6, 4))
         for url in [reverse("polls:index"), poll.get_absolute_url()]:
@@ -363,13 +368,12 @@ class ResultVisibilityTests(TestCase):
                 response = self.client.get(url)
                 self.assertContains(response, "decision-bar__segment")
                 self.assertContains(response, "Az farkla önde")
-                self.assertNotContains(response, "option-row__percent")
-                self.assertNotContains(response, "%60")
+                self.assertPercentagesHidden(response)
 
     def test_detail_hides_percentages_from_other_logged_in_users(self):
         poll = make_poll(self.author, counts=(6, 4))
         self.client.force_login(self.visitor)
-        self.assertNotContains(self.client.get(poll.get_absolute_url()), "option-row__percent")
+        self.assertPercentagesHidden(self.client.get(poll.get_absolute_url()))
 
     def test_author_sees_percentages_without_voting(self):
         poll = make_poll(self.author, counts=(6, 4))
@@ -400,7 +404,7 @@ class DetailAndProfileTests(TestCase):
         self.assertContains(response, LONG_QUESTION)
         self.assertContains(response, "Kısa bir açıklama")
         self.assertContains(response, "@KullaniciAdi")
-        self.assertContains(response, "3 kişi oy verdi")
+        self.assertContains(response, "<span data-total>3</span> kişi oy verdi")
         for position in (1, 2, 3):
             self.assertContains(response, f"Seçenek {position}")
 

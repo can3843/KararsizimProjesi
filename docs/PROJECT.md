@@ -226,6 +226,13 @@ UniqueConstraint(fields=["poll", "voter_key"], condition=Q(user__isnull=True), n
 5. `IntegrityError` yakalanır → "Bu ankete zaten oy verdin" mesajı.
 6. Oy verilen anket id'si `request.session["voted_polls"]` listesine eklenir (hızlı UI kontrolü için).
 
+Uygulama notları (Faz 4):
+- Oy geri alınamadığı için seçenekler radyo düğmesidir; oy, ayrı bir **"Oy ver"** butonuyla gönderilir (yanlış tıklamayla oy verilmesin). JS kapalıyken form düz POST + redirect ile çalışır.
+- Durum kodları AJAX'ta (`X-Requested-With` veya `Accept: application/json`) JSON ile, JS'siz formda ise **aynı kodla** (400/403/409) detay sayfası render edilerek döner; başarıda redirect. Hata mesajı toast olarak görünür.
+- `/sonuc/` ve oy cevapları aynı görünürlük kuralına uyar: oy vermemiş ziyaretçiye `count` ve `percent` `null` döner (`total`, rozet ve seçenek metinleri açıktır). Cevapta kullanıcı kimliği veya e-posta bulunmaz. Şartnamedeki alanlara ek olarak `badge` (`level`, `text`) döner; `message`/`error` alanı eklenir.
+- Aynı kullanıcının veya aynı oturumun eşzamanlı çift isteği Postgres üzerinde doğrulandı: biri başarılı, diğerleri 409; sayaçlar tam 1 artar (`F()` + kısıtlar).
+- Sahibi: `/kapat/` POST (403: sahibi değilse, girişsizse girişe yönlendirir). `/sil/` GET onay ekranı gösterir, POST siler; silinen anketin seçenek ve oyları da silinir.
+
 ### Sonuç görünürlüğü
 - Oy vermeden önce yüzde **rakamları** gizlidir (sürü psikolojisini kırmak için). Toplam oy sayısı görünür: "142 kişi oy verdi".
 - Oy verildikten sonra veya anket kapandıktan sonra tüm yüzde rakamları açılır.

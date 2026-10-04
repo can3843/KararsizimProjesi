@@ -1,4 +1,4 @@
-<div class="decision-bar" role="img" aria-label="{{ poll.bar_label }}">
-  {% for row in poll.rows %}{% if row.percent %}<span class="decision-bar__segment opt-{{ row.index }}" style="width: {{ row.percent }}%"></span>{% endif %}{% endfor %}
+<div class="decision-bar" role="img" aria-label="{{ poll.bar_label }}" data-bar>
+  {% for row in poll.rows %}<span class="decision-bar__segment opt-{{ row.index }}" data-option-id="{{ row.option.pk }}" style="width: {{ row.percent }}%"></span>{% endfor %}
 </div>
-<p class="badge badge--{{ poll.badge_level }}">{{ poll.badge_text }}</p>
+<p class="badge badge--{{ poll.badge_level }}" data-badge>{{ poll.badge_text }}</p>

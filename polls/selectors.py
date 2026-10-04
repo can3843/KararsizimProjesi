@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Count, Q, Sum
 from django.utils import timezone
 
-from .models import Poll
+from .models import Poll, Vote
 from .utils import compute_percentages, decision_badge
 
 PAGE_SIZE = 20
@@ -46,6 +46,15 @@ def get_poll(public_id):
     return _with_relations(Poll.objects.filter(public_id=public_id)).first()
 
 
+def find_option(poll, raw_id):
+    """Yalnızca bu ankete ait seçeneği döndürür; geçersiz ya da yabancı id için None."""
+    try:
+        option_id = int(raw_id)
+    except (TypeError, ValueError):
+        return None
+    return next((option for option in poll.options.all() if option.pk == option_id), None)
+
+
 def get_profile_user(username):
     return get_user_model().objects.filter(username__iexact=username).first()
 
@@ -61,7 +70,18 @@ def user_stats(user):
     return {"poll_count": totals["polls"], "votes_received": totals["votes"] or 0}
 
 
-def decorate(polls, viewer):
+def viewer_vote_option_id(poll, user, voter_key):
+    votes = Vote.objects.filter(poll=poll)
+    if user.is_authenticated:
+        votes = votes.filter(user=user)
+    elif voter_key:
+        votes = votes.filter(user__isnull=True, voter_key=voter_key)
+    else:
+        return None
+    return votes.values_list("option_id", flat=True).first()
+
+
+def decorate(polls, viewer, voted_poll_ids=frozenset()):
     """Şablonların ihtiyaç duyduğu sonuç alanlarını hesaplar. `options` önceden çekilmiş olmalı."""
     viewer_id = viewer.pk if viewer.is_authenticated else None
     for poll in polls:
@@ -69,10 +89,12 @@ def decorate(polls, viewer):
         counts = [option.vote_count for option in options]
         percents = compute_percentages(counts)
         poll.open = poll.is_open
-        # Yüzde rakamları oy vermeden önce gizlidir; kapanınca ve sahibi için açıktır.
-        poll.results_visible = not poll.open or poll.author_id == viewer_id
+        # Yüzde rakamları oy vermeden önce gizlidir; oy verince, kapanınca ve sahibi için açıktır.
+        poll.results_visible = (
+            not poll.open or poll.author_id == viewer_id or poll.pk in voted_poll_ids
+        )
         poll.rows = [
-            {"index": index, "option": option, "percent": percent}
+            {"index": index, "option": option, "percent": percent, "voted": False}
             for index, (option, percent) in enumerate(zip(options, percents))
         ]
         poll.badge_level, poll.badge_text = decision_badge(percents, sum(counts), poll.open)
@@ -81,3 +103,37 @@ def decorate(polls, viewer):
         else:
             poll.bar_label = "Oyların dağılımı. Yüzdeler oy verince açılır."
     return polls
+
+
+def decorate_detail(poll, viewer, voter_key, session_voted_ids):
+    """Detay sayfası için: izleyicinin oyunu ve oy verebilme durumunu da ekler."""
+    voted_option_id = viewer_vote_option_id(poll, viewer, voter_key)
+    has_voted = voted_option_id is not None or poll.pk in session_voted_ids
+    decorate([poll], viewer, {poll.pk} if has_voted else frozenset())
+    poll.has_voted = has_voted
+    poll.voted_option_id = voted_option_id
+    poll.can_vote = poll.open and not has_voted
+    poll.is_owner = viewer.is_authenticated and poll.author_id == viewer.pk
+    for row in poll.rows:
+        row["voted"] = row["option"].pk == voted_option_id
+    return poll
+
+
+def results_payload(poll):
+    """`/sonuc/` ve oy cevaplarının JSON gövdesi. Gizli olan sayılar null döner; kullanıcı bilgisi içermez."""
+    visible = poll.results_visible
+    return {
+        "total": poll.total_votes,
+        "options": [
+            {
+                "id": row["option"].pk,
+                "text": row["option"].text,
+                "count": row["option"].vote_count if visible else None,
+                "percent": row["percent"] if visible else None,
+            }
+            for row in poll.rows
+        ],
+        "voted_option_id": poll.voted_option_id,
+        "is_open": poll.open,
+        "badge": {"level": poll.badge_level, "text": poll.badge_text},
+    }
