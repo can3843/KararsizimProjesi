@@ -14,7 +14,7 @@
 | 3 Anket oluşturma ve akış | bitti | `339871c` |
 | 4 Oylama ve sonuçlar | bitti | `e8abcf4` |
 | 5 Arayüz cilası | bitti | `7fec02c` |
-| **6 Vercel deployment** | **başlanmadı** | — |
+| **6 Vercel deployment** | **sürüyor** — yerel hazırlık bitti (güvenlik ayarları, `config/test_settings.py`, `docs/DEPLOY.md`); Vercel proje/env/deploy adımları onay bekliyor | — |
 | 7 Sertleştirme (opsiyonel) | başlanmadı | — |
 
 - Depo: https://github.com/can3843/KararsizimProjesi.git, dal `main`, tümü pushlanmış, çalışma ağacı temiz.

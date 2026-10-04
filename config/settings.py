@@ -28,6 +28,12 @@ CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
 
 VOTER_KEY_SALT = os.getenv("VOTER_KEY_SALT", "dev-only-voter-salt")
 
+# Vercel her çalışma ortamında VERCEL=1 tanımlar; yerelde DEBUG=False denerken
+# HTTPS zorlaması çalışmasın diye DJANGO_SECURE ile ayrıca ezilebilir.
+SECURE_DEPLOYMENT = os.getenv("DJANGO_SECURE", "True" if os.getenv("VERCEL") else "False").lower() in ("1", "true", "yes")
+if SECURE_DEPLOYMENT and DEBUG:
+    raise RuntimeError("DJANGO_SECURE açıkken DJANGO_DEBUG kapalı olmalı.")
+
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -106,5 +112,12 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
+
+if SECURE_DEPLOYMENT:
+    # Vercel TLS'i kenarda sonlandırır; Django isteği http görür.
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
