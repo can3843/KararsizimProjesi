@@ -60,6 +60,29 @@ class Option(models.Model):
         return self.text
 
 
+class Report(models.Model):
+    class Reason(models.TextChoices):
+        SPAM = "spam", "Spam ya da reklam"
+        INAPPROPRIATE = "inappropriate", "Uygunsuz içerik"
+        OTHER = "other", "Diğer"
+
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name="reports")
+    reporter = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="reports",
+    )
+    reason = models.CharField(max_length=20, choices=Reason)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["poll", "reporter"], name="uniq_report_per_user"),
+        ]
+
+    def __str__(self):
+        return f"{self.poll_id}:{self.reason}"
+
+
 class Vote(models.Model):
     poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name="votes")
     option = models.ForeignKey(Option, on_delete=models.CASCADE, related_name="votes")

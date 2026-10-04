@@ -41,6 +41,22 @@
       </ul>
     {% endif %}
 
+    {% if user.is_authenticated and not poll.is_owner %}
+      <details class="report-box">
+        <summary>Bu anketi bildir</summary>
+        <form method="post" action="{% url 'polls:report' poll.public_id %}" data-submit-lock data-loading-text="Gönderiliyor…">
+          {% csrf_token %}
+          <fieldset class="vote-fieldset">
+            <legend class="visually-hidden">Bildirim nedeni</legend>
+            <label><input type="radio" name="reason" value="spam" required> Spam ya da reklam</label>
+            <label><input type="radio" name="reason" value="inappropriate"> Uygunsuz içerik</label>
+            <label><input type="radio" name="reason" value="other"> Diğer</label>
+          </fieldset>
+          <button class="button button--secondary" type="submit">Bildir</button>
+        </form>
+      </details>
+    {% endif %}
+
     {% if poll.is_owner %}
       <div class="owner-actions">
         {% if poll.open %}

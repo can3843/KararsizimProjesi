@@ -3,7 +3,7 @@ from django.db import IntegrityError, transaction
 from django.db.models import F
 from django.utils import timezone
 
-from .models import Option, Poll, Vote
+from .models import Option, Poll, Report, Vote
 
 DAILY_POLL_LIMIT = 10
 
@@ -68,6 +68,12 @@ def cast_vote(poll, option, user, voter_key):
     except IntegrityError:
         # Aynı anda gelen ikinci istek: kısıt devreye girer, sayaçlar artmaz.
         raise AlreadyVoted from None
+
+
+def report_poll(poll, reporter, reason):
+    """Bildirimi kaydeder; aynı kullanıcının aynı ankete ikinci bildirimi için False döner."""
+    _, created = Report.objects.get_or_create(poll=poll, reporter=reporter, defaults={"reason": reason})
+    return created
 
 
 def close_poll(poll):

@@ -26,7 +26,11 @@ if not SECRET_KEY:
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1")
 CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
 
-VOTER_KEY_SALT = os.getenv("VOTER_KEY_SALT", "dev-only-voter-salt")
+VOTER_KEY_SALT = os.getenv("VOTER_KEY_SALT", "")
+if not VOTER_KEY_SALT:
+    if not DEBUG:
+        raise RuntimeError("VOTER_KEY_SALT ortam değişkeni tanımlı olmalı.")
+    VOTER_KEY_SALT = "dev-only-voter-salt"
 
 # Vercel her çalışma ortamında VERCEL=1 tanımlar; yerelde DEBUG=False denerken
 # HTTPS zorlaması çalışmasın diye DJANGO_SECURE ile ayrıca ezilebilir.
@@ -44,6 +48,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "accounts",
     "polls",
+    "ratelimit",
 ]
 
 MIDDLEWARE = [
@@ -54,6 +59,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
+    "ratelimit.middleware.LoginRateLimitMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 

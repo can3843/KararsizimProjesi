@@ -555,3 +555,15 @@
     animation: none !important;
   }
 }
+
+.report-box {
+  margin-top: var(--sp-6);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--line);
+}
+
+.report-box summary { cursor: pointer; color: var(--muted); }
+
+.report-box form { margin-top: var(--sp-3); }
+
+.report-box label { display: block; margin-bottom: var(--sp-2); }

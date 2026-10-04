@@ -18,7 +18,7 @@ PROBE = (
 def load_settings(**env):
     # Her denemede settings yeniden içe aktarılsın diye ayrı süreçte çalışır.
     base = {k: v for k, v in os.environ.items() if not k.startswith(("DJANGO_", "VERCEL"))}
-    base.update(DJANGO_SECRET_KEY="test-secret", **env)
+    base.update(DJANGO_SECRET_KEY="test-secret", VOTER_KEY_SALT="test-salt", **env)
     return subprocess.run(
         [sys.executable, "-c", PROBE], cwd=BASE_DIR, env=base, capture_output=True, text=True
     )
@@ -62,3 +62,15 @@ class ProductionSecuritySettingsTests(SimpleTestCase):
         )
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("DJANGO_SECRET_KEY", result.stderr)
+
+    def test_missing_voter_key_salt_fails_in_production(self):
+        env = {k: v for k, v in os.environ.items() if not k.startswith(("DJANGO_", "VERCEL", "VOTER_KEY_SALT"))}
+        result = subprocess.run(
+            [sys.executable, "-c", PROBE],
+            cwd=BASE_DIR,
+            env={**env, "DJANGO_DEBUG": "False", "DJANGO_SECRET_KEY": "test-secret", "VOTER_KEY_SALT": ""},
+            capture_output=True,
+            text=True,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("VOTER_KEY_SALT", result.stderr)

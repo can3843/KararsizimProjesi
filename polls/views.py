@@ -6,8 +6,12 @@ from django.shortcuts import redirect, render
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
+from ratelimit import limits
+from ratelimit import services as ratelimit
+
 from . import selectors, services
 from .forms import PollForm
+from .models import Report
 from .utils import get_voter_key
 
 
@@ -73,7 +77,11 @@ def detail(request, public_id):
 @login_required
 def create(request):
     form = PollForm(request.POST or None)
+    ip = ratelimit.client_ip(request)
     if request.method == "POST" and form.is_valid():
+        if ratelimit.is_limited(limits.POLL_CREATE_IP, ip):
+            form.add_error(None, "Bu bağlantıdan bugün çok fazla anket açıldı. Yarın tekrar dene.")
+            return render(request, "polls/create.html", {"form": form}, status=429)
         try:
             poll = services.create_poll(
                 request.user,
@@ -86,6 +94,7 @@ def create(request):
                 None, f"Bugün en fazla {services.DAILY_POLL_LIMIT} anket açabilirsin. Yarın tekrar dene.",
             )
         else:
+            ratelimit.record(limits.POLL_CREATE_IP, ip)
             messages.success(request, "Anketin yayında.")
             return redirect(poll)
     return render(request, "polls/create.html", {"form": form})
@@ -108,8 +117,18 @@ def _vote_response(request, public_id, status, message):
 @require_POST
 def vote(request, public_id):
     poll = _get_poll_or_404(public_id)
-    voter_key = get_voter_key(request, create=True)
     user = request.user if request.user.is_authenticated else None
+    ip = ratelimit.client_ip(request)
+
+    if user is None:
+        # Sınır, oturum yaratılmadan önce denetlenir: her çerezsiz istek yeni bir oturum satırı demektir.
+        if ratelimit.is_limited(limits.VOTE_ATTEMPT_IP, ip) or ratelimit.is_limited(
+            limits.VOTE_POLL_IP, f"{ip}|{poll.pk}"
+        ):
+            return _vote_response(request, public_id, 429, "Çok fazla oy denemesi yaptın. Biraz sonra tekrar dene.")
+        ratelimit.record(limits.VOTE_ATTEMPT_IP, ip)
+
+    voter_key = get_voter_key(request, create=True)
     option = selectors.find_option(poll, request.POST.get("option_id"))
 
     try:
@@ -122,6 +141,8 @@ def vote(request, public_id):
         _remember_vote(request, poll)
         return _vote_response(request, public_id, 409, "Bu ankete zaten oy verdin.")
 
+    if user is None:
+        ratelimit.record(limits.VOTE_POLL_IP, f"{ip}|{poll.pk}")
     _remember_vote(request, poll)
     return _vote_response(request, public_id, 200, "Oyun kaydedildi.")
 
@@ -138,6 +159,24 @@ def _get_owned_poll(request, public_id):
     if poll.author_id != request.user.pk:
         raise PermissionDenied
     return poll
+
+
+@require_POST
+@login_required
+def report(request, public_id):
+    poll = _get_poll_or_404(public_id)
+    reason = request.POST.get("reason")
+    if poll.author_id == request.user.pk:
+        messages.error(request, "Kendi anketini bildiremezsin.")
+    elif reason not in Report.Reason.values:
+        messages.error(request, "Bildirim nedenini seç.")
+    elif ratelimit.is_limited(limits.REPORT_USER, request.user.pk):
+        messages.error(request, "Bugün çok fazla bildirim gönderdin. Yarın tekrar dene.")
+    else:
+        ratelimit.record(limits.REPORT_USER, request.user.pk)
+        services.report_poll(poll, request.user, reason)
+        messages.success(request, "Bildirimin alındı, teşekkürler.")
+    return redirect(poll)
 
 
 @require_POST

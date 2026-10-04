@@ -15,11 +15,12 @@
 | 4 Oylama ve sonuçlar | bitti | `e8abcf4` |
 | 5 Arayüz cilası | bitti | `7fec02c` |
 | 6 Vercel deployment | bitti (soğuk başlangıç kontrolü hariç, bkz. Bölüm 4) | `555ab9b` |
+| 6.1 Güvenlik incelemesi düzeltmeleri (hız sınırı, bildirim) | kodlandı, canlıya alınması DB adımını bekliyor (Bölüm 9) | — |
 | 7 Sertleştirme (opsiyonel) | başlanmadı | — |
 
 - Depo: https://github.com/can3843/KararsizimProjesi.git, dal `main`, tümü pushlanmış, çalışma ağacı temiz.
 - Canlı: Vercel projesi `kararsizim-app` (ekip `Ayhancan`, Hobby), GitHub'a bağlı; `main`'e her push production'a otomatik deploy olur. Adres https://kararsizim-app.vercel.app, bölge `fra1`.
-- Testler: `python manage.py test` → **168 test, hepsi geçiyor**. Zorunlu testlerin (Bölüm 9) hepsi var.
+- Testler: `python manage.py test` → **202 test, hepsi geçiyor** (Faz 6.1 sonrası). Zorunlu testlerin (Bölüm 9) hepsi var.
 - Lighthouse Accessibility: 9 sayfa türünün hepsi **100** (Faz 5'te `npx lighthouse` ile ölçüldü; projeye eklenmedi).
 - Faz 0–5'in tüm kabul kriterleri kapandı.
 
@@ -74,10 +75,10 @@ Ayrıntılı rehber: `docs/DEPLOY.md`.
 
 ## 6. Bilinen sınırlar (kabul edilmiş)
 
-- Çerezini temizleyen anonim ziyaretçi tekrar oy verebilir; anonim oy verip giriş yapan kullanıcı bir kez daha oy verebilir. Faz 7'de IP tabanlı hız sınırıyla hafifletilecek (ham IP saklanmaz).
+- Çerezini temizleyen anonim ziyaretçi tekrar oy verebilir; anonim oy verip giriş yapan kullanıcı bir kez daha oy verebilir. Faz 6.1'de IP tabanlı hız sınırıyla hafifletildi (Bölüm 9); tamamen kapanmadı.
 - JS için otomatik test altyapısı yok (şartname ayrı test framework'ü yasaklıyor); JS değişiklikleri tarayıcıda elle doğrulanır (Faz 5'te böyle bir hata yakalanıp düzeltildi).
 - `og-image.png` yalnızca marka çubuğunu gösterir (metin yok).
-- Faz 7 maddeleri (hız sınırı, paylaş butonu, arama, rapor, `closes_at` formu vb.) yapılmadı.
+- Faz 7 maddeleri (paylaş butonu, arama, rapor, `closes_at` formu vb.) yapılmadı.
 
 ## 7. Çalışma biçimi ve küçük tuzaklar
 
@@ -98,3 +99,14 @@ Teknik tuzaklar (Windows + PowerShell 5.1):
 ## 8. Yeni oturum için başlangıç komutu
 
 > `docs/PROJECT.md` ve `docs/DURUM.md` dosyalarını oku. Faz 7'den (sertleştirme, opsiyonel) hangi maddelerle devam edeceğimizi öner; başlamadan önce ne yapacağını özetle. `main`'e her push canlıya otomatik deploy olur: push, ortam değişkeni ve alan adı gibi dışarıya açık adımlarda onayımı iste.
+
+## 9. Faz 6.1 — Güvenlik incelemesi düzeltmeleri
+
+`code-review-security` incelemesindeki üç bulgu kapatıldı. Ham IP/kullanıcı adı saklanmaz; `ratelimit_ratelimithit.scope` tuzlu SHA-256 özetidir.
+
+- **Yeni uygulama `ratelimit`**: `RateLimitHit` tablosu, `limits.py` (tüm sınırlar tek yerde), `services.py` (`client_ip`, `is_limited`, `record`, fırsatçı temizlik: eski olaylar ve süresi dolmuş oturumlar), `LoginRateLimitMiddleware`. Vercel'de IP `X-Vercel-Forwarded-For` başlığından okunur; IPv6 /64 bloğu tek sayılır.
+- **Anonim oy**: IP başına saatte 60 deneme (oturum yaratılmadan önce denetlenir) ve aynı ankete 24 saatte 5 anonim oy; aşılınca 429. Doğrulama: aynı CSRF çiftiyle 200 çerezsiz istek önceden 200 oy + 200 oturum satırıydı, şimdi 5 + 5. Oturum açmış kullanıcılar bu sınırlara tabi değil. Ortak IP'li (okul, mobil operatör) kullanıcılar için sınırlar bilerek cömert.
+- **Giriş/kayıt/admin**: başarısız giriş IP başına 20, kullanıcı adı başına 8 (15 dk); admin girişi IP başına 10 (15 dk); kayıt IP başına 5 / 24 saat. 429 sayfası `templates/429.html`. Bilinen yan etki: bir kullanıcı adını kasıtlı kilitleyerek hesabı 15 dk kullanılamaz yapmak mümkün.
+- **Spam/moderasyon**: anket oluşturma IP başına 24 saatte 20 (anket silmek sayacı sıfırlamaz); anket detayında oturum açmış başka kullanıcılar için "Bu anketi bildir" (`Report` modeli, kullanıcı başına anket başına tek bildirim, günde 10); admin'de `Poll` listesinde bildirim sayısı, bildirim satır içi listesi, `Report` listesi ve "Seçili anketleri kapat" eylemi. Otomatik gizleme ve e-posta doğrulaması yapılmadı.
+- `VOTER_KEY_SALT` production'da (DEBUG kapalıyken) tanımsızsa uygulama açılmaz.
+- **Migration'lar:** `ratelimit/0001_initial`, `polls/0002_report`. İki yeni tabloda RLS açık olmalı (Bölüm 3). **Sıra önemli:** önce tablolar canlı veritabanında oluşturulmalı, sonra `main` push edilmeli; yoksa canlıda oy ve giriş 500 verir.

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Çok fazla deneme · Kararsızım{% endblock %}
+
+{% block content %}
+  <section class="auth-card">
+    <h1>Çok fazla deneme</h1>
+    <p>Kısa sürede çok fazla istek yaptın. Biraz bekleyip tekrar dene.</p>
+    <a class="button button--primary button--block" href="{% url 'polls:index' %}">Ana sayfaya dön</a>
+  </section>
+{% endblock %}
