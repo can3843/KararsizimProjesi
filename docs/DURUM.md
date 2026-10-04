@@ -15,7 +15,7 @@
 | 4 Oylama ve sonuçlar | bitti | `e8abcf4` |
 | 5 Arayüz cilası | bitti | `7fec02c` |
 | 6 Vercel deployment | bitti (soğuk başlangıç kontrolü hariç, bkz. Bölüm 4) | `555ab9b` |
-| 6.1 Güvenlik incelemesi düzeltmeleri (hız sınırı, bildirim) | kodlandı, canlıya alınması DB adımını bekliyor (Bölüm 9) | — |
+| 6.1 Güvenlik incelemesi düzeltmeleri (hız sınırı, bildirim) | bitti, canlıda (Bölüm 9) | `cf06177` |
 | 7 Sertleştirme (opsiyonel) | başlanmadı | — |
 
 - Depo: https://github.com/can3843/KararsizimProjesi.git, dal `main`, tümü pushlanmış, çalışma ağacı temiz.
@@ -109,4 +109,4 @@ Teknik tuzaklar (Windows + PowerShell 5.1):
 - **Giriş/kayıt/admin**: başarısız giriş IP başına 20, kullanıcı adı başına 8 (15 dk); admin girişi IP başına 10 (15 dk); kayıt IP başına 5 / 24 saat. 429 sayfası `templates/429.html`. Bilinen yan etki: bir kullanıcı adını kasıtlı kilitleyerek hesabı 15 dk kullanılamaz yapmak mümkün.
 - **Spam/moderasyon**: anket oluşturma IP başına 24 saatte 20 (anket silmek sayacı sıfırlamaz); anket detayında oturum açmış başka kullanıcılar için "Bu anketi bildir" (`Report` modeli, kullanıcı başına anket başına tek bildirim, günde 10); admin'de `Poll` listesinde bildirim sayısı, bildirim satır içi listesi, `Report` listesi ve "Seçili anketleri kapat" eylemi. Otomatik gizleme ve e-posta doğrulaması yapılmadı.
 - `VOTER_KEY_SALT` production'da (DEBUG kapalıyken) tanımsızsa uygulama açılmaz.
-- **Migration'lar:** `ratelimit/0001_initial`, `polls/0002_report`. İki yeni tabloda RLS açık olmalı (Bölüm 3). **Sıra önemli:** önce tablolar canlı veritabanında oluşturulmalı, sonra `main` push edilmeli; yoksa canlıda oy ve giriş 500 verir.
+- **Migration'lar:** `ratelimit/0001_initial`, `polls/0002_report`. İki yeni tabloda RLS açık olmalı (Bölüm 3). Canlıda tablolar Supabase MCP ile elle oluşturuldu (RLS açık, `django_migrations` kayıtları eklendi), sonra push edildi. **Sıra önemli:** yeni tablo içeren bir değişiklikte önce tablolar canlı veritabanında oluşturulmalı, sonra `main` push edilmeli; yoksa canlıda 500 verir. Canlı doğrulama (2026-10-04): admin girişinde 10 deneme geçti, 11.si 429; ana sayfa, anket, `/sonuc/`, giriş, kayıt sayfaları 200; `get_advisors` yalnızca beklenen "RLS Enabled No Policy" INFO uyarısını veriyor.
