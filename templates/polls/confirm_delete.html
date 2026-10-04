@@ -8,7 +8,7 @@
     <p>Bu anket ve verilen {{ poll.total_votes }} oy kalıcı olarak silinecek. Bu işlem geri alınamaz.</p>
     <blockquote class="confirm-question">{{ poll.question }}</blockquote>
 
-    <form method="post">
+    <form method="post" data-submit-lock data-loading-text="Siliniyor…">
       {% csrf_token %}
       <button class="button button--danger button--block" type="submit">Evet, anketi sil</button>
     </form>

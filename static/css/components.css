@@ -8,35 +8,68 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-3);
+  gap: var(--sp-2) var(--sp-3);
   padding-block: var(--sp-3);
 }
 
 .site-header__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-right: auto;
+  min-height: 44px;
   color: var(--ink);
-  font-size: 20px;
+  font-family: var(--font-display);
+  font-size: var(--fs-20);
   font-weight: 800;
   text-decoration: none;
 }
 
-.site-header__nav {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-2);
+.site-header__logo img {
+  display: block;
+  width: 28px;
+  height: 28px;
 }
 
-.site-header__nav form { margin: 0; }
-
 .site-header__user {
-  margin-right: var(--sp-2);
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   color: var(--ink);
   font-weight: 600;
   text-decoration: none;
+  overflow-wrap: anywhere;
 }
 
 .site-header__user:hover { text-decoration: underline; }
+
+.site-header__actions {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.site-header__actions form { margin: 0; }
+
+/* Dar ekranda eylemler kendi satırına geçer ve satırı eşit paylaşır; geniş ekranda logonun yanındadır. */
+.site-header__actions {
+  flex-basis: 100%;
+}
+
+.site-header__actions > *,
+.site-header__actions .button {
+  flex: 1;
+}
+
+@media (min-width: 640px) {
+  .site-header__actions {
+    flex-basis: auto;
+  }
+
+  .site-header__actions > *,
+  .site-header__actions .button {
+    flex: initial;
+  }
+}
 
 /* Butonlar */
 .button {
@@ -86,6 +119,11 @@
   background: color-mix(in srgb, var(--danger) 10%, var(--surface));
 }
 
+/* Odak halkası hover gölgesinden sonra gelmeli ki ikisi birlikte olduğunda da kaybolmasın. */
+.button:focus-visible {
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
 .button--block {
   width: 100%;
   margin-top: var(--sp-3);
@@ -116,7 +154,7 @@
 .field__hint {
   margin: var(--sp-1) 0 0;
   color: var(--muted);
-  font-size: 14px;
+  font-size: var(--fs-14);
 }
 
 /* Hata metni: --danger beyaz zeminde 4.5:1 vermez, bu yüzden metin --ink, işaret --danger. */
@@ -124,7 +162,7 @@
   margin: var(--sp-1) 0 0;
   padding-left: var(--sp-3);
   border-left: 3px solid var(--danger);
-  font-size: 14px;
+  font-size: var(--fs-14);
   font-weight: 600;
 }
 
@@ -212,7 +250,7 @@
 
 .poll-card__question {
   margin: var(--sp-3) 0 var(--sp-2);
-  font-size: 20px;
+  font-size: var(--fs-20);
 }
 
 .poll-card__question a {
@@ -225,7 +263,7 @@
 .poll-card__meta {
   margin: 0;
   color: var(--muted);
-  font-size: 14px;
+  font-size: var(--fs-14);
 }
 
 .load-more,
@@ -264,9 +302,14 @@
   border-radius: var(--radius-pill);
   background: color-mix(in srgb, var(--violet) 10%, var(--surface));
   color: var(--ink);
-  font-size: 14px;
+  font-size: var(--fs-14);
   font-weight: 600;
 }
+
+/* Rozet seviyeleri: metin hep --ink, renk yalnızca zemin tonu */
+.badge--split { background: color-mix(in srgb, var(--sun) 45%, var(--surface)); }
+.badge--close { background: color-mix(in srgb, var(--violet) 12%, var(--surface)); }
+.badge--clear { background: color-mix(in srgb, var(--mint) 28%, var(--surface)); }
 
 .badge--empty {
   background: transparent;
@@ -288,16 +331,16 @@
 
 .poll-detail__question {
   margin-top: var(--sp-2);
-  font-size: 26px;
+  font-size: var(--fs-26);
 }
 
 @media (min-width: 600px) {
-  .poll-detail__question { font-size: 34px; }
+  .poll-detail__question { font-size: var(--fs-34); }
 }
 
 .poll-detail__total {
   margin: var(--sp-3) 0 var(--sp-5);
-  font-family: ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-weight: 500;
 }
 
@@ -315,7 +358,7 @@
   min-height: 1.5em;
   margin: calc(-1 * var(--sp-4)) 0 var(--sp-3);
   color: var(--muted);
-  font-size: 14px;
+  font-size: var(--fs-14);
 }
 
 .option-row {
@@ -362,7 +405,7 @@
 }
 
 .option-row__percent {
-  font-family: ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-weight: 500;
 }
 

@@ -1,10 +1,13 @@
 from django import forms
+from django.core.validators import MaxLengthValidator, MinLengthValidator
 
-from .models import Option, Poll
+from .models import QUESTION_MIN_LENGTH, Option, Poll
 
 MIN_OPTIONS = 2
 MAX_OPTIONS = 5
 OPTION_MAX_LENGTH = Option._meta.get_field("text").max_length
+QUESTION_MAX_LENGTH = Poll._meta.get_field("question").max_length
+DESCRIPTION_MAX_LENGTH = Poll._meta.get_field("description").max_length
 
 
 class PollForm(forms.ModelForm):
@@ -19,8 +22,19 @@ class PollForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["question"].help_text = "10–140 karakter."
-        self.fields["question"].widget.attrs["autofocus"] = True
+        question = self.fields["question"]
+        question.help_text = f"{QUESTION_MIN_LENGTH}–{QUESTION_MAX_LENGTH} karakter."
+        question.widget.attrs["autofocus"] = True
+        # Django'nun varsayılan uzunluk mesajları yerine kısa ve yönlendiren metinler.
+        question.validators = [
+            MinLengthValidator(QUESTION_MIN_LENGTH, message="Soru en az %(limit_value)d karakter olmalı."),
+            MaxLengthValidator(QUESTION_MAX_LENGTH, message="Soru en fazla %(limit_value)d karakter olabilir."),
+        ]
+        self.fields["description"].validators = [
+            MaxLengthValidator(
+                DESCRIPTION_MAX_LENGTH, message="Açıklama en fazla %(limit_value)d karakter olabilir.",
+            ),
+        ]
 
     @property
     def option_rows(self):

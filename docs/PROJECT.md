@@ -341,6 +341,16 @@ Bu rozet, ürünün adıyla doğrudan konuşan tek dekoratif olmayan öğedir �
 - Renk tek başına bilgi taşımaz: her seçenekte yüzde metni de yazar.
 - Mobil öncelikli; 360px genişlikte yatay kaydırma olmaz. Dokunma hedefleri en az 44px.
 
+Uygulama notları (Faz 5):
+- **Yazı tipleri** Google Fonts `css2` adresiyle tek `<link>` ile yüklenir; `latin` ve `latin-ext` alt kümeleri `unicode-range` ile otomatik gelir (ayrı `subset=` parametresi gerekmez). Aileler ve tip ölçeği `tokens.css`'te `--font-*` ve `--fs-12…44` olarak durur; CSS'te ham `px` yazı boyutu yoktur. Yüzde ve oy sayıları `.num` / `--font-mono` ile yazılır.
+- **Hata rengi**: `--danger` beyaz zeminde 4.5:1 vermez. Hata metni `--ink` kalın yazıdır, solunda `--danger` çizgi bulunur. `.button--danger` de aynı mantıkla çerçeve rengiyle tehlikeyi belirtir.
+- **Odak halkası**: şartnamedeki `outline` korunur; `--sun` açık zeminde zayıf kaldığı için boşluğa `--ink` renkli 2px halka (`box-shadow`) eklenir.
+- **Ham hex yalnızca iki yerde vardır**: `tokens.css` ve `static/img/logo.svg` / `og-image.png` (favicon ve paylaşım görseli CSS değişkeni okuyamaz). `theme-color` meta etiketi bu yüzden kullanılmaz.
+- **Paylaşım**: `og:title` anket sorusu, `og:description` anket açıklaması (yoksa "N kişi oy verdi"), `og:image` sabit marka görseli (1200×630). Kullanıcı metni nitelik içinde HTML-escape edilir.
+- **Hata sayfaları**: `404.html`, `403.html`, `403_csrf.html` site şablonunu kullanır; `500.html` bilerek bağımsızdır (hata veritabanından veya oturumdan gelebilir).
+- **Yükleniyor durumları**: veri değiştiren formlar `data-submit-lock` ile çift gönderime karşı kilitlenir; oy düğmesi "Oy veriliyor…" yazar. Hareket olarak yalnızca sonuç çubukları ve buton hover'ları vardır, dönen gösterge yoktur.
+- **Klavye**: seçenekler radyo grubudur (ok tuşları + Tab); oy sonrası odak "Oyunu verdin." satırına taşınır.
+
 ### Metin dili (arayüz kopyası)
 - Arayüz **Türkçe**, samimi ve kısa. Kod içindeki değişken/fonksiyon isimleri **İngilizce**.
 - Butonlar ne yaptığını söyler: "Anket oluştur", "Oy ver", "Sonuçları gör", "Anketi kapat".

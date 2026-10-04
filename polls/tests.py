@@ -213,6 +213,15 @@ class CreatePollTests(TestCase):
                 self.assertIn("question", response.context["form"].errors)
         self.assertEqual(Poll.objects.count(), 0)
 
+    def test_length_errors_tell_what_to_do(self):
+        self.client.force_login(self.user)
+        short = self.post(question="Kısa?")
+        self.assertFormError(short.context["form"], "question", "Soru en az 10 karakter olmalı.")
+        long = self.post(question="x" * 141)
+        self.assertFormError(long.context["form"], "question", "Soru en fazla 140 karakter olabilir.")
+        description = self.post(description="y" * 281)
+        self.assertFormError(description.context["form"], "description", "Açıklama en fazla 280 karakter olabilir.")
+
     def test_entered_values_survive_validation_errors(self):
         self.client.force_login(self.user)
         response = self.post(options=["Sinema", "", "", "Restoran", ""], question="Kısa?")
@@ -264,7 +273,7 @@ class FeedTests(TestCase):
         response = self.client.get(reverse("polls:index"))
         self.assertContains(response, LONG_QUESTION)
         self.assertContains(response, "@ayse")
-        self.assertContains(response, "10 oy")
+        self.assertContains(response, '<span class="num">10</span> oy')
         self.assertContains(response, "Kalabalık da kararsız")
         self.assertContains(response, "decision-bar")
 
@@ -421,7 +430,7 @@ class DetailAndProfileTests(TestCase):
         make_poll(self.author, "İkinci anket için soru metni", counts=(4, 4), status=Poll.Status.CLOSED)
         response = self.client.get(reverse("polls:profile", args=["KullaniciAdi"]))
         self.assertContains(response, "@KullaniciAdi")
-        self.assertContains(response, "2 anket · 11 oy aldı")
+        self.assertContains(response, '<span class="num">2</span> anket · <span class="num">11</span> oy aldı')
         self.assertContains(response, LONG_QUESTION)
         self.assertContains(response, "İkinci anket için soru metni")
 
@@ -434,7 +443,7 @@ class DetailAndProfileTests(TestCase):
     def test_profile_for_user_without_polls_shows_empty_state(self):
         User.objects.create_user("bos_kullanici", "bos@example.com", PASSWORD)
         response = self.client.get("/kullanici/bos_kullanici/")
-        self.assertContains(response, "0 anket · 0 oy aldı")
+        self.assertContains(response, '<span class="num">0</span> anket · <span class="num">0</span> oy aldı')
         self.assertContains(response, "Henüz anket yok.")
 
     def test_author_email_is_never_rendered(self):

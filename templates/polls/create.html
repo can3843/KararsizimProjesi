@@ -8,7 +8,7 @@
     <h1>Anket oluştur</h1>
     <p class="muted">Kararsız kaldığın şeyi sor, 2–5 seçenek ekle.</p>
 
-    <form method="post" novalidate>
+    <form method="post" novalidate data-submit-lock data-loading-text="Anket yayınlanıyor…">
       {% csrf_token %}
       {% if form.non_field_errors %}
         <div class="alert alert--danger" role="alert">

@@ -6,20 +6,25 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: system-ui, sans-serif;
-  font-size: 16px;
+  font-family: var(--font-body);
+  font-size: var(--fs-16);
   line-height: 1.5;
 }
 
 h1, h2, h3 {
   margin: 0 0 var(--sp-3);
-  line-height: 1.2;
+  font-family: var(--font-display);
+  font-weight: 800;
+  line-height: 1.15;
 }
 
-h1 { font-size: 26px; }
+h1 { font-size: var(--fs-26); }
+
+.page-title { font-size: var(--fs-34); }
 
 @media (min-width: 600px) {
-  h1 { font-size: 34px; }
+  h1 { font-size: var(--fs-34); }
+  .page-title { font-size: var(--fs-44); }
 }
 
 p { margin: 0 0 var(--sp-3); }
@@ -27,6 +32,12 @@ p { margin: 0 0 var(--sp-3); }
 a { color: var(--violet); }
 
 .muted { color: var(--muted); }
+
+/* Yüzde ve oy sayıları sabit genişlikli rakamlarla yazılır; animasyonda zıplamaz. */
+.num {
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
 
 [hidden] { display: none !important; }
 

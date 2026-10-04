@@ -4,7 +4,7 @@
 
 {% block content %}
   <h1>@{{ profile_user.username }}</h1>
-  <p class="muted">{{ stats.poll_count }} anket · {{ stats.votes_received }} oy aldı</p>
+  <p class="muted"><span class="num">{{ stats.poll_count }}</span> anket · <span class="num">{{ stats.votes_received }}</span> oy aldı</p>
 
   {% include "partials/poll_list.html" %}
 {% endblock %}

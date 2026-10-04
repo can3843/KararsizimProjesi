@@ -7,6 +7,8 @@ from django.utils import timezone
 
 from .utils import generate_public_id
 
+QUESTION_MIN_LENGTH = 10
+
 
 class Poll(models.Model):
     class Status(models.TextChoices):
@@ -16,7 +18,7 @@ class Poll(models.Model):
     public_id = models.CharField(
         max_length=12, unique=True, db_index=True, default=generate_public_id, editable=False,
     )
-    question = models.CharField(max_length=140, validators=[MinLengthValidator(10)])
+    question = models.CharField(max_length=140, validators=[MinLengthValidator(QUESTION_MIN_LENGTH)])
     description = models.CharField(max_length=280, blank=True)
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="polls",

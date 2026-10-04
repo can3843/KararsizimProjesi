@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Oturum doğrulanamadı · Kararsızım{% endblock %}
+
+{% block content %}
+  <section class="auth-card">
+    <h1>Oturum doğrulanamadı</h1>
+    <p>Sayfa uzun süre açık kaldığı için gönderilen form geçersiz sayıldı. Sayfayı yenileyip işlemi tekrar dene.</p>
+    <a class="button button--primary button--block" href="{% url 'polls:index' %}">Ana sayfaya dön</a>
+  </section>
+{% endblock %}

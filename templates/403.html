@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}İzin yok · Kararsızım{% endblock %}
+
+{% block content %}
+  <section class="auth-card">
+    <h1>Bu işleme iznin yok</h1>
+    <p>Bir anketi yalnızca sahibi kapatabilir veya silebilir. Doğru hesapla giriş yaptığından emin ol.</p>
+    <a class="button button--primary button--block" href="{% url 'polls:index' %}">Ana sayfaya dön</a>
+  </section>
+{% endblock %}

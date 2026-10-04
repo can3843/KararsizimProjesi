@@ -12,7 +12,7 @@
       </div>
     {% endif %}
 
-    <form method="post" novalidate>
+    <form method="post" novalidate data-submit-lock data-loading-text="Giriş yapılıyor…">
       {% csrf_token %}
       <input type="hidden" name="next" value="{{ next }}">
       {% if form.non_field_errors %}

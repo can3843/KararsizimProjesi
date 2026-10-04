@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Sayfa bulunamadı · Kararsızım{% endblock %}
+
+{% block content %}
+  <section class="auth-card">
+    <h1>Bu sayfa yok</h1>
+    <p>Aradığın anket silinmiş ya da adres yanlış yazılmış olabilir. Ana sayfadan güncel anketlere bakabilirsin.</p>
+    <a class="button button--primary button--block" href="{% url 'polls:index' %}">Ana sayfaya dön</a>
+  </section>
+{% endblock %}

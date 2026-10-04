@@ -7,7 +7,7 @@
     <h1>Kayıt ol</h1>
     <p class="muted">Oy vermek için üyelik gerekmez. Anket oluşturmak için hesap açman yeterli.</p>
 
-    <form method="post" novalidate>
+    <form method="post" novalidate data-submit-lock data-loading-text="Hesap açılıyor…">
       {% csrf_token %}
       {% if form.non_field_errors %}
         <div class="alert alert--danger" role="alert">

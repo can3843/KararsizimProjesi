@@ -11,8 +11,16 @@
     return form.querySelector("input[name=option_id]:checked");
   }
 
+  var idleLabel = submitButton.textContent;
+
   function syncButton() {
     submitButton.disabled = !selectedInput();
+  }
+
+  function setBusy(busy) {
+    submitButton.textContent = busy ? "Oy veriliyor…" : idleLabel;
+    submitButton.toggleAttribute("aria-busy", busy);
+    submitButton.disabled = busy || !selectedInput();
   }
 
   function setPercent(optionId, percent) {
@@ -46,8 +54,8 @@
     var badge = article.querySelector("[data-badge]");
     badge.className = "badge badge--" + data.badge.level;
     badge.textContent = data.badge.text;
-    article.querySelector("[data-vote-status]").textContent =
-      data.voted_option_id !== null ? "Oyunu verdin." : (data.is_open ? "" : "Bu anket kapandı.");
+    var status = article.querySelector("[data-vote-status]");
+    status.textContent = data.voted_option_id !== null ? "Oyunu verdin." : "Bu anket kapandı.";
 
     // Oy verildi ya da anket kapandı: seçim kontrollerini kaldır.
     article.querySelectorAll(".option-row__input").forEach(function (input) { input.remove(); });
@@ -55,6 +63,10 @@
       row.classList.remove("option-row--votable");
     });
     form.querySelector(".vote-actions").hidden = true;
+
+    // Odaktaki düğme kaybolacağı için klavye ve ekran okuyucu kullanıcısını sonuca taşı.
+    status.setAttribute("tabindex", "-1");
+    status.focus({ preventScroll: true });
   }
 
   form.addEventListener("change", syncButton);
@@ -67,10 +79,13 @@
       return;
     }
 
-    submitButton.disabled = true;
+    // Gövde, alanlar pasifleşmeden önce okunmalı: pasif alanlar forma dahil edilmez.
+    var body = new FormData(form);
+    setBusy(true);
+    form.querySelectorAll("input[name=option_id]").forEach(function (input) { input.disabled = true; });
     fetch(form.action, {
       method: "POST",
-      body: new FormData(form),
+      body: body,
       credentials: "same-origin",
       headers: {
         "X-CSRFToken": token,
@@ -79,25 +94,38 @@
       },
     })
       .then(function (response) {
-        return response.json().then(function (data) { return { status: response.status, data: data }; });
+        // JSON olmayan cevap (ör. süresi dolmuş CSRF jetonu için HTML 403 sayfası) boş veri sayılır.
+        return response.json().catch(function () { return {}; }).then(function (data) {
+          return { status: response.status, data: data };
+        });
       })
       .then(function (result) {
         var data = result.data;
         if (result.status === 200) {
           showResults(data);
           window.showToast(data.message, "success");
-        } else if (data.options) {
-          // 403/409: sunucu güncel sonuçları da döndürür.
+        } else if (data.options && (data.voted_option_id !== null || !data.is_open)) {
+          // 403/409: oy zaten verilmiş ya da anket kapanmış; sunucu güncel sonuçları döndürür.
           showResults(data);
           window.showToast(data.error, "error");
         } else {
-          window.showToast(data.error || "Bir şeyler ters gitti. Tekrar dene.", "error");
-          syncButton();
+          enableChoices();
+          window.showToast(
+            data.error || (result.status === 403
+              ? "Oturum doğrulanamadı. Sayfayı yenileyip tekrar dene."
+              : "Bir şeyler ters gitti. Tekrar dene."),
+            "error"
+          );
         }
       })
       .catch(function () {
+        enableChoices();
         window.showToast("Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene.", "error");
-        syncButton();
       });
   });
+
+  function enableChoices() {
+    form.querySelectorAll("input[name=option_id]").forEach(function (input) { input.disabled = false; });
+    setBusy(false);
+  }
 })();
