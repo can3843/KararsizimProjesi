@@ -27,10 +27,12 @@ def _split_page(rows, limit):
     return rows[:limit], len(rows) > limit
 
 
-def feed(tab, page):
+def feed(tab, page, query=""):
     """Akış: ilk `page * PAGE_SIZE` kayıt ve devamı olup olmadığı. Sorgu sayısı sabittir."""
     now = timezone.now()
     queryset = _with_relations(Poll.objects.all())
+    if query:
+        queryset = queryset.filter(question__icontains=query)
     if tab == "kapananlar":
         queryset = queryset.exclude(_open_filter(now))
     else:

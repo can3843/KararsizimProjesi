@@ -1,4 +1,5 @@
 from django import forms
+from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
@@ -7,6 +8,13 @@ User = get_user_model()
 
 class RegisterForm(UserCreationForm):
     error_messages = {"password_mismatch": "Parolalar eşleşmiyor."}
+
+    # Bal küpü: insan görmez, basit botlar doldurur.
+    website = forms.CharField(
+        required=False,
+        label="Web sitesi",
+        widget=forms.TextInput(attrs={"tabindex": "-1", "autocomplete": "off"}),
+    )
 
     class Meta(UserCreationForm.Meta):
         model = User
@@ -24,6 +32,12 @@ class RegisterForm(UserCreationForm):
 
     def clean_email(self):
         return self.cleaned_data["email"].strip().lower()
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data.get("website"):
+            raise ValidationError("Kayıt tamamlanamadı. Sayfayı yenileyip tekrar dene.")
+        return cleaned_data
 
 
 class LoginForm(AuthenticationForm):

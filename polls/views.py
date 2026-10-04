@@ -1,3 +1,5 @@
+from urllib.parse import urlencode
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
@@ -13,6 +15,9 @@ from . import selectors, services
 from .forms import PollForm
 from .models import Report
 from .utils import get_voter_key
+
+
+SEARCH_MAX_LENGTH = 100
 
 
 def _page_number(request):
@@ -34,7 +39,7 @@ def _get_poll_or_404(public_id):
     poll = selectors.get_poll(public_id)
     if poll is None:
         raise Http404
-    return poll
+    return services.close_if_expired(poll)
 
 
 def _decorate_detail(request, poll):
@@ -56,16 +61,19 @@ def index(request):
     tab = request.GET.get("tab")
     if tab not in dict(selectors.TABS):
         tab = selectors.DEFAULT_TAB
+    query = request.GET.get("q", "").strip()[:SEARCH_MAX_LENGTH]
     page = _page_number(request)
-    polls, has_more = selectors.feed(tab, page)
+    polls, has_more = selectors.feed(tab, page, query)
     selectors.decorate(polls, request.user)
     next_page = page + 1 if has_more and page < selectors.MAX_PAGES else None
+    params = {"tab": tab, **({"q": query} if query else {})}
     return render(request, "polls/index.html", {
         "polls": polls,
         "tab": tab,
-        "tabs": selectors.TABS,
+        "tabs": [(key, label, urlencode({**params, "tab": key})) for key, label in selectors.TABS],
+        "query": query,
         "next_page": next_page,
-        "load_more_url": f"?tab={tab}&page={next_page}",
+        "load_more_url": "?" + urlencode({**params, "page": next_page}),
     })
 
 
@@ -88,6 +96,7 @@ def create(request):
                 form.cleaned_data["question"],
                 form.cleaned_data["description"],
                 form.cleaned_data["option_texts"],
+                form.cleaned_data["closes_at"],
             )
         except services.DailyLimitReached:
             form.add_error(

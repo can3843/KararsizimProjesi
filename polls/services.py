@@ -29,7 +29,7 @@ class AlreadyVoted(VoteError):
 
 
 @transaction.atomic
-def create_poll(author, question, description, option_texts):
+def create_poll(author, question, description, option_texts, closes_at=None):
     # Yazar satırını kilitlemek, aynı anda gelen isteklerin günlük sınırı aşmasını önler.
     get_user_model().objects.select_for_update().get(pk=author.pk)
 
@@ -37,7 +37,7 @@ def create_poll(author, question, description, option_texts):
     if Poll.objects.filter(author=author, created_at__gte=day_start).count() >= DAILY_POLL_LIMIT:
         raise DailyLimitReached
 
-    poll = Poll.objects.create(author=author, question=question, description=description)
+    poll = Poll.objects.create(author=author, question=question, description=description, closes_at=closes_at)
     Option.objects.bulk_create(
         Option(poll=poll, text=text, position=position) for position, text in enumerate(option_texts)
     )
@@ -74,6 +74,14 @@ def report_poll(poll, reporter, reason):
     """Bildirimi kaydeder; aynı kullanıcının aynı ankete ikinci bildirimi için False döner."""
     _, created = Report.objects.get_or_create(poll=poll, reporter=reporter, defaults={"reason": reason})
     return created
+
+
+def close_if_expired(poll):
+    """Süresi dolmuş açık anketi kapalı olarak işaretler (cron yok; anket okunurken tembel kontrol)."""
+    if poll.status == Poll.Status.ACTIVE and poll.closes_at is not None and poll.closes_at <= timezone.now():
+        Poll.objects.filter(pk=poll.pk, status=Poll.Status.ACTIVE).update(status=Poll.Status.CLOSED)
+        poll.status = Poll.Status.CLOSED
+    return poll
 
 
 def close_poll(poll):

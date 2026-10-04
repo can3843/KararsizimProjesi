@@ -15,8 +15,12 @@
         </div>
       {% endif %}
       {% for field in form %}
-        {% include "partials/form_field.html" %}
+        {% if field.name != "website" %}{% include "partials/form_field.html" %}{% endif %}
       {% endfor %}
+      <div class="hp-field" aria-hidden="true">
+        <label for="{{ form.website.id_for_label }}">{{ form.website.label }}</label>
+        {{ form.website }}
+      </div>
       <button class="button button--primary button--block" type="submit">Kayıt ol</button>
     </form>
 

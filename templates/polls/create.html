@@ -18,6 +18,7 @@
 
       {% include "partials/form_field.html" with field=form.question %}
       {% include "partials/form_field.html" with field=form.description %}
+      {% include "partials/form_field.html" with field=form.duration %}
 
       <fieldset class="options{% if form.options.errors %} field--error{% endif %}">
         <legend>Seçenekler</legend>

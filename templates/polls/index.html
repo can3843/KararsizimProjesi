@@ -4,9 +4,16 @@
   <h1 class="page-title">Kararsızım</h1>
   <p class="muted">Sen sor, kalabalık karar versin.</p>
 
+  <form class="search" method="get" role="search">
+    <input type="hidden" name="tab" value="{{ tab }}">
+    <label class="visually-hidden" for="search-q">Anketlerde ara</label>
+    <input class="search__input" type="search" id="search-q" name="q" value="{{ query }}" maxlength="100" placeholder="Anketlerde ara" autocomplete="off">
+    <button class="button button--secondary" type="submit">Ara</button>
+  </form>
+
   <nav class="tabs" aria-label="Anket akışı">
-    {% for key, label in tabs %}
-      <a class="tab" href="?tab={{ key }}"{% if key == tab %} aria-current="page"{% endif %}>{{ label }}</a>
+    {% for key, label, params in tabs %}
+      <a class="tab" href="?{{ params }}"{% if key == tab %} aria-current="page"{% endif %}>{{ label }}</a>
     {% endfor %}
   </nav>
 

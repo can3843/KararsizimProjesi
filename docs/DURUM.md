@@ -2,7 +2,7 @@
 
 > Yeni bir oturum açan herkes (insan ya da Claude) önce `docs/PROJECT.md` (şartname), sonra bu dosyayı okur.
 > Bu dosyada **parola, anahtar veya bağlantı adresi yoktur**; gizli değerler yalnızca yerel `.env` ve Vercel ortam değişkenlerindedir.
-> Son güncelleme: 2026-10-04, Faz 6 sonrası. Uygulama **canlıda**: https://kararsizim-app.vercel.app. Sıradaki iş: Faz 7 (opsiyonel) ve Faz 6'nın açık kalan tek maddesi (soğuk başlangıç kontrolü, aşağıda).
+> Son güncelleme: 2026-10-04, Faz 6 sonrası. Uygulama **canlıda**: https://kararsizim-app.vercel.app. Tüm fazlar bitti; Faz 6'nın açık kalan tek maddesi soğuk başlangıç kontrolü (Bölüm 4).
 
 ## 1. Nerede kaldık
 
@@ -16,11 +16,11 @@
 | 5 Arayüz cilası | bitti | `7fec02c` |
 | 6 Vercel deployment | bitti (soğuk başlangıç kontrolü hariç, bkz. Bölüm 4) | `555ab9b` |
 | 6.1 Güvenlik incelemesi düzeltmeleri (hız sınırı, bildirim) | bitti, canlıda (Bölüm 9) | `cf06177` |
-| 7 Sertleştirme (opsiyonel) | başlanmadı | — |
+| 7 Sertleştirme ve küçük eklemeler | bitti (Bölüm 10) | bkz. git log |
 
 - Depo: https://github.com/can3843/KararsizimProjesi.git, dal `main`, tümü pushlanmış, çalışma ağacı temiz.
 - Canlı: Vercel projesi `kararsizim-app` (ekip `Ayhancan`, Hobby), GitHub'a bağlı; `main`'e her push production'a otomatik deploy olur. Adres https://kararsizim-app.vercel.app, bölge `fra1`.
-- Testler: `python manage.py test` → **202 test, hepsi geçiyor** (Faz 6.1 sonrası). Zorunlu testlerin (Bölüm 9) hepsi var.
+- Testler: `python manage.py test` → **223 test, hepsi geçiyor** (Faz 7 sonrası). Zorunlu testlerin (Bölüm 9) hepsi var.
 - Lighthouse Accessibility: 9 sayfa türünün hepsi **100** (Faz 5'te `npx lighthouse` ile ölçüldü; projeye eklenmedi).
 - Faz 0–5'in tüm kabul kriterleri kapandı.
 
@@ -78,7 +78,7 @@ Ayrıntılı rehber: `docs/DEPLOY.md`.
 - Çerezini temizleyen anonim ziyaretçi tekrar oy verebilir; anonim oy verip giriş yapan kullanıcı bir kez daha oy verebilir. Faz 6.1'de IP tabanlı hız sınırıyla hafifletildi (Bölüm 9); tamamen kapanmadı.
 - JS için otomatik test altyapısı yok (şartname ayrı test framework'ü yasaklıyor); JS değişiklikleri tarayıcıda elle doğrulanır (Faz 5'te böyle bir hata yakalanıp düzeltildi).
 - `og-image.png` yalnızca marka çubuğunu gösterir (metin yok).
-- Faz 7 maddeleri (paylaş butonu, arama, rapor, `closes_at` formu vb.) yapılmadı.
+- Faz 7 maddeleri yapıldı (Bölüm 10).
 
 ## 7. Çalışma biçimi ve küçük tuzaklar
 
@@ -98,7 +98,7 @@ Teknik tuzaklar (Windows + PowerShell 5.1):
 
 ## 8. Yeni oturum için başlangıç komutu
 
-> `docs/PROJECT.md` ve `docs/DURUM.md` dosyalarını oku. Faz 7'den (sertleştirme, opsiyonel) hangi maddelerle devam edeceğimizi öner; başlamadan önce ne yapacağını özetle. `main`'e her push canlıya otomatik deploy olur: push, ortam değişkeni ve alan adı gibi dışarıya açık adımlarda onayımı iste.
+> `docs/PROJECT.md` ve `docs/DURUM.md` dosyalarını oku. Tüm fazlar bitti; yalnızca Faz 6'nın soğuk başlangıç kontrolü ve istersen Faz 7 sonrası Lighthouse ölçümü kaldı. `main`'e her push canlıya otomatik deploy olur: push, ortam değişkeni ve alan adı gibi dışarıya açık adımlarda onayımı iste.
 
 ## 9. Faz 6.1 — Güvenlik incelemesi düzeltmeleri
 
@@ -110,3 +110,16 @@ Teknik tuzaklar (Windows + PowerShell 5.1):
 - **Spam/moderasyon**: anket oluşturma IP başına 24 saatte 20 (anket silmek sayacı sıfırlamaz); anket detayında oturum açmış başka kullanıcılar için "Bu anketi bildir" (`Report` modeli, kullanıcı başına anket başına tek bildirim, günde 10); admin'de `Poll` listesinde bildirim sayısı, bildirim satır içi listesi, `Report` listesi ve "Seçili anketleri kapat" eylemi. Otomatik gizleme ve e-posta doğrulaması yapılmadı.
 - `VOTER_KEY_SALT` production'da (DEBUG kapalıyken) tanımsızsa uygulama açılmaz.
 - **Migration'lar:** `ratelimit/0001_initial`, `polls/0002_report`. İki yeni tabloda RLS açık olmalı (Bölüm 3). Canlıda tablolar Supabase MCP ile elle oluşturuldu (RLS açık, `django_migrations` kayıtları eklendi), sonra push edildi. **Sıra önemli:** yeni tablo içeren bir değişiklikte önce tablolar canlı veritabanında oluşturulmalı, sonra `main` push edilmeli; yoksa canlıda 500 verir. Canlı doğrulama (2026-10-04): admin girişinde 10 deneme geçti, 11.si 429; ana sayfa, anket, `/sonuc/`, giriş, kayıt sayfaları 200; `get_advisors` yalnızca beklenen "RLS Enabled No Policy" INFO uyarısını veriyor.
+
+## 10. Faz 7 — Sertleştirme ve küçük eklemeler (yapıldı)
+
+Şema değişikliği yok (yeni tablo/migration yok), canlı veritabanında işlem gerekmedi.
+
+- **Hız sınırı + bildirim**: Bölüm 9'da (Faz 6.1).
+- **Kayıt honeypot'u**: `RegisterForm.website` gizli alanı (ekran dışı, `aria-hidden`, `tabindex=-1`); doluysa kayıt reddedilir.
+- **Paylaş butonu** (`static/js/share.js`): `navigator.share`, yoksa panoya kopyalama. JS kapalıyken buton gizli kalır.
+- **Arama**: anasayfada `?q=` ile soru içinde `icontains` araması (en çok 100 karakter); sekmeler ve "Daha fazla göster" sorguyu korur.
+- **Kararsızlık kartı** (`static/js/card.js`): sonuçlar görünürken 1200×630 PNG üretir ve indirir; renkler CSS değişkenlerinden okunur. Oy verince sayfa yenilenmeden buton belirir. Tarayıcıda elle doğrulandı (otomatik JS testi yok, bkz. Bölüm 6).
+- **`closes_at`**: anket formunda "Ne kadar açık kalsın?" (süresiz, 1 saat, 1/3/7 gün); süresi dolan anket okunurken tembel olarak `closed` yapılır (`services.close_if_expired`, cron yok); detayda "… tarihinde kapanır" görünür.
+- **Testler**: `polls/test_phase7.py` (21 test), `ratelimit/tests.py`.
+- Lighthouse Accessibility Faz 7 sonrası yeniden ölçülmedi.

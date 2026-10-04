@@ -63,6 +63,7 @@
       row.classList.remove("option-row--votable");
     });
     form.querySelector(".vote-actions").hidden = true;
+    if (window.syncCardButton) window.syncCardButton();
 
     // Odaktaki düğme kaybolacağı için klavye ve ekran okuyucu kullanıcısını sonuca taşı.
     status.setAttribute("tabindex", "-1");

@@ -9,7 +9,12 @@
   {% endif %}
 {% else %}
   <div class="empty-state">
-    <p>Henüz anket yok. İlk kararsızlığını sen paylaş.</p>
-    <a class="button button--primary" href="{% url 'polls:create' %}">Anket oluştur</a>
+    {% if query %}
+      <p>“{{ query }}” için anket bulunamadı.</p>
+      <a class="button button--secondary" href="{% url 'polls:index' %}">Aramayı temizle</a>
+    {% else %}
+      <p>Henüz anket yok. İlk kararsızlığını sen paylaş.</p>
+      <a class="button button--primary" href="{% url 'polls:create' %}">Anket oluştur</a>
+    {% endif %}
   </div>
 {% endif %}

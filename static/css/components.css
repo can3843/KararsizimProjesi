@@ -567,3 +567,48 @@
 .report-box form { margin-top: var(--sp-3); }
 
 .report-box label { display: block; margin-bottom: var(--sp-2); }
+
+.field select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 var(--sp-4);
+  border: 1.5px solid var(--muted);
+  border-radius: var(--radius-input);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+
+.search {
+  display: flex;
+  gap: var(--sp-2);
+  margin-top: var(--sp-5);
+}
+
+.search__input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 var(--sp-4);
+  border: 1.5px solid var(--muted);
+  border-radius: var(--radius-input);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+
+.share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-5);
+}
+
+/* Bal küpü alanı: ekran dışında, insanlar görmez. */
+.hp-field {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}

@@ -1,5 +1,9 @@
+from datetime import timedelta
+
 from django import forms
 from django.core.validators import MaxLengthValidator, MinLengthValidator
+
+from django.utils import timezone
 
 from .models import QUESTION_MIN_LENGTH, Option, Poll
 
@@ -10,9 +14,27 @@ QUESTION_MAX_LENGTH = Poll._meta.get_field("question").max_length
 DESCRIPTION_MAX_LENGTH = Poll._meta.get_field("description").max_length
 
 
+DURATIONS = {
+    "1h": timedelta(hours=1),
+    "1d": timedelta(days=1),
+    "3d": timedelta(days=3),
+    "7d": timedelta(days=7),
+}
+DURATION_CHOICES = [
+    ("", "Süresiz"),
+    ("1h", "1 saat"),
+    ("1d", "1 gün"),
+    ("3d", "3 gün"),
+    ("7d", "7 gün"),
+]
+
+
 class PollForm(forms.ModelForm):
     # Yalnızca seçenek hatalarını taşır; seçenekler `option` adıyla tekrarlanan girdilerden okunur.
     options = forms.Field(required=False)
+    duration = forms.ChoiceField(
+        required=False, choices=DURATION_CHOICES, label="Ne kadar açık kalsın? (isteğe bağlı)",
+    )
 
     class Meta:
         model = Poll
@@ -44,6 +66,8 @@ class PollForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
+        duration = DURATIONS.get(cleaned_data.get("duration"))
+        cleaned_data["closes_at"] = timezone.now() + duration if duration else None
         raw = self.data.getlist("option") if self.is_bound else []
         texts = [text.strip() for text in raw if text.strip()]
 
