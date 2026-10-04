@@ -544,11 +544,13 @@ DJANGO_CSRF_TRUSTED_ORIGINS=http://localhost:8000
 VOTER_KEY_SALT=degistir-bunu-da
 
 # Supabase — uygulama çalışırken (Transaction pooler, port 6543)
-DATABASE_URL=postgresql://postgres.<PROJE_REF>:<PAROLA>@aws-0-<BOLGE>.pooler.supabase.com:6543/postgres
+DATABASE_URL=postgresql://postgres.<PROJE_REF>:<PAROLA>@aws-1-<BOLGE>.pooler.supabase.com:6543/postgres
 
 # Supabase — sadece migration için (Session pooler, port 5432)
-DATABASE_URL_DIRECT=postgresql://postgres.<PROJE_REF>:<PAROLA>@aws-0-<BOLGE>.pooler.supabase.com:5432/postgres
+DATABASE_URL_DIRECT=postgresql://postgres.<PROJE_REF>:<PAROLA>@aws-1-<BOLGE>.pooler.supabase.com:5432/postgres
 ```
+
+> Not: Yeni Supabase projeleri pooler adresinde `aws-1-` önekini kullanır (eski projeler `aws-0-`). Önek, Supabase dashboard'daki **Connect** ekranından doğrulanır. `DATABASE_URL_DIRECT` yalnızca migration komutlarında kullanılır, `settings.py` onu okumaz. Parolada yalnızca harf ve rakam kullan, aksi halde adreste URL kodlaması gerekir.
 
 Production'da (Vercel dashboard) `DJANGO_DEBUG=False`, `DJANGO_ALLOWED_HOSTS=.vercel.app`, `DJANGO_CSRF_TRUSTED_ORIGINS=https://<proje>.vercel.app`.
 
@@ -572,7 +574,8 @@ DATABASES["default"].setdefault("OPTIONS", {})["prepare_threshold"] = None
 
 - `CONN_MAX_AGE=0` şart. Serverless'ta kalıcı bağlantı tutmak havuzu tüketir.
 - **Migration'lar Vercel build sırasında çalıştırılmaz.** Yerelden `DATABASE_URL=$DATABASE_URL_DIRECT python manage.py migrate` ile çalıştırılır. Bunu `docs/DEPLOY.md`'ye yaz.
-- Supabase Auth, RLS, Storage, Edge Functions **kullanılmıyor**. Supabase burada sadece yönetilen bir Postgres.
+- Supabase Auth, Storage, Edge Functions **kullanılmıyor**. Supabase burada sadece yönetilen bir Postgres.
+- **RLS tüm tablolarda politikasız açık tutulur (deny-all).** Supabase'in otomatik REST API'si `public` şemasını anon anahtarla herkese açar; `accounts_user` e-posta ve parola özeti içerir. Django `postgres` rolüyle bağlandığı için RLS'yi atlar, uygulama etkilenmez; REST API ise tablolara erişemez. Supabase'in "RLS Enabled No Policy" (INFO) uyarısı bu yüzden beklenen bir durumdur. **Her yeni tablo/migration sonrası** (`makemigrations` + `migrate`) Supabase'de o tabloya da `ALTER TABLE "public"."<tablo>" ENABLE ROW LEVEL SECURITY;` uygulanır ve `get_advisors` ile kontrol edilir.
 
 ### 11.2 Vercel yapılandırması
 
@@ -596,11 +599,14 @@ WhiteNoise'u yine de tutuyoruz: production'da statikleri CDN servis eder, WhiteN
 ```json
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "regions": ["fra1"],
   "functions": {
     "config/wsgi.py": { "maxDuration": 30 }
   }
 }
 ```
+
+`regions`: Vercel fonksiyonlarının varsayılan bölgesi ABD doğu yakasıdır (`iad1`). Supabase projesi Frankfurt'ta (`eu-central-1`) olduğundan fonksiyon da `fra1`'de çalışmalı; aksi halde her sorgu okyanus aşırı gider.
 
 Diğer notlar:
 - `requirements.txt` repo **kökünde** olmalı ve sadece runtime bağımlılıklarını içermeli (Python'da otomatik tree-shaking yok, bundle'a her şey girer).
