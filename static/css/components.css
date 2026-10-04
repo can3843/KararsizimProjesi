@@ -1,0 +1,171 @@
+/* Başlık */
+.site-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.site-header__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding-block: var(--sp-3);
+}
+
+.site-header__logo {
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.site-header__nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.site-header__nav form { margin: 0; }
+
+.site-header__user {
+  font-weight: 600;
+  margin-right: var(--sp-2);
+}
+
+/* Butonlar */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 var(--sp-5);
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-pill);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 150ms, box-shadow 150ms;
+}
+
+.button--primary {
+  background: var(--violet);
+  color: var(--surface);
+}
+
+.button--primary:hover {
+  background: color-mix(in srgb, var(--violet) 85%, var(--ink));
+  box-shadow: var(--shadow-sm);
+}
+
+.button--secondary {
+  background: transparent;
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.button--secondary:hover {
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+}
+
+.button--block {
+  width: 100%;
+  margin-top: var(--sp-3);
+}
+
+/* Form alanları */
+.field { margin-bottom: var(--sp-4); }
+
+.field label {
+  display: block;
+  margin-bottom: var(--sp-1);
+  font-weight: 600;
+}
+
+.field input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 var(--sp-4);
+  border: 1.5px solid var(--muted);
+  border-radius: var(--radius-input);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+
+.field--error input { border-color: var(--danger); }
+
+.field__hint {
+  margin: var(--sp-1) 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* Hata metni: --danger beyaz zeminde 4.5:1 vermez, bu yüzden metin --ink, işaret --danger. */
+.field__error {
+  margin: var(--sp-1) 0 0;
+  padding-left: var(--sp-3);
+  border-left: 3px solid var(--danger);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Bilgi kutuları */
+.alert {
+  margin-bottom: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  border-left: 4px solid var(--sky);
+  border-radius: var(--radius-input);
+  background: color-mix(in srgb, var(--sky) 14%, var(--surface));
+}
+
+.alert--danger {
+  border-left-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 10%, var(--surface));
+}
+
+.alert p:last-child { margin-bottom: 0; }
+
+/* Giriş/kayıt kartı */
+.auth-card {
+  max-width: 440px;
+  margin: var(--sp-5) auto;
+  padding: var(--sp-5);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.auth-card__switch {
+  margin: var(--sp-5) 0 0;
+  text-align: center;
+}
+
+/* Toast */
+.toast-region {
+  position: fixed;
+  right: var(--sp-4);
+  bottom: var(--sp-4);
+  z-index: 10;
+  display: grid;
+  gap: var(--sp-2);
+  max-width: min(90vw, 360px);
+}
+
+.toast {
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--radius-input);
+  background: var(--ink);
+  color: var(--surface);
+  box-shadow: var(--shadow-md);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

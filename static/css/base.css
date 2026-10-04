@@ -7,8 +7,55 @@ body {
   background: var(--paper);
   color: var(--ink);
   font-family: system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
 }
 
-main {
-  padding: var(--sp-5) var(--sp-4);
+h1, h2, h3 {
+  margin: 0 0 var(--sp-3);
+  line-height: 1.2;
+}
+
+h1 { font-size: 26px; }
+
+@media (min-width: 600px) {
+  h1 { font-size: 34px; }
+}
+
+p { margin: 0 0 var(--sp-3); }
+
+a { color: var(--violet); }
+
+.muted { color: var(--muted); }
+
+.container {
+  width: 100%;
+  max-width: 960px;
+  margin-inline: auto;
+  padding-inline: var(--sp-4);
+}
+
+main.container {
+  padding-block: var(--sp-5);
+}
+
+:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 2px;
+  /* --sun açık zeminde tek başına zayıf kalır; boşluğa koyu bir halka eklenir. */
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--sp-4);
+  top: -100px;
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--ink);
+  color: var(--surface);
+  border-radius: var(--radius-pill);
+}
+
+.skip-link:focus {
+  top: var(--sp-2);
 }

@@ -1,0 +1,5 @@
+<div id="toast-region" class="toast-region" aria-live="polite">
+  {% for message in messages %}
+    <div class="toast toast--{{ message.level_tag }}" role="status">{{ message }}</div>
+  {% endfor %}
+</div>

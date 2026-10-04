@@ -6,10 +6,15 @@
   <title>{% block title %}Kararsızım{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components.css' %}">
 </head>
 <body>
-  <main>
+  <a class="skip-link" href="#main">İçeriğe geç</a>
+  {% include "partials/header.html" %}
+  <main id="main" class="container">
     {% block content %}{% endblock %}
   </main>
+  {% include "partials/toast.html" %}
+  <script src="{% static 'js/toast.js' %}" defer></script>
 </body>
 </html>
